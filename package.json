@@ -11,10 +11,12 @@
     "preview": "firebase emulators:start --only hosting",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
+    "ingest": "tsx --tsconfig scripts/tsconfig.json scripts/ingest/index.ts",
     "deploy:firebase": "npm run generate && firebase deploy --only hosting"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.11.4",
+    "@nuxtjs/i18n": "^10.6.0",
     "@pinia/nuxt": "^0.11.2",
     "@tailwindcss/vite": "^4.1.11",
     "@vueuse/core": "^13.5.0",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.3",
     "vue-tsc": "^3.0.4"
   }
