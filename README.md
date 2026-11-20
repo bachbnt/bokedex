@@ -2,6 +2,8 @@
 
 A fast, animated Pokédex and game companion. Browse every Pokémon, check type matchups, build a team and play quizzes, all from live data.
 
+**Live site: [bokedex.web.app](https://bokedex.web.app)**
+
 Built with **Nuxt 4, Vue 3, Pinia, VueUse and Tailwind CSS 4**. Data comes from the free [PokeAPI](https://pokeapi.co).
 
 ![Bokedex home](docs/screenshots/home.webp)
@@ -41,7 +43,7 @@ npm run dev          # http://localhost:3000
 | --- | --- |
 | `npm run dev` | Development server with hot reload |
 | `npm run generate` | Build the static site into `.output/public` |
-| `npm run preview` | Serve the built site at http://localhost:5002 with the production rewrites (needs the Firebase CLI) |
+| `npm run preview` | Serve the built site at `http://localhost:5002` with the production rewrites (needs the Firebase CLI) |
 | `npm run typecheck` | Type-check the app, server and shared code |
 
 ## Built to grow with PokeAPI
@@ -52,7 +54,7 @@ It is a static site, so it needs no server and hosts for free. See [Architecture
 
 ## Deploy to Firebase Hosting
 
-The site deploys to Firebase Hosting on the **free Spark plan**; no Cloud Functions or billing needed.
+The site is live at **[bokedex.web.app](https://bokedex.web.app)** (Firebase project `bokedex`, site `bokedex`). It deploys to Firebase Hosting on the **free Spark plan**; no Cloud Functions or billing needed.
 
 Requirements: the Firebase CLI, signed in to the account that owns the project (`firebase login:use <email>`, or pass `--account <email>`).
 

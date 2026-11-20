@@ -189,6 +189,26 @@ h3,
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--poke, var(--brand)) 25%, transparent);
 }
 
+/* Native select arrows sit flush against the border; draw our own with proper breathing room. */
+select.input {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6190' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  text-overflow: ellipsis;
+}
+
+.dark select.input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aa1d6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* WebKit's built-in clear button would collide with the "/" shortcut hint. */
+input[type='search']::-webkit-search-cancel-button {
+  appearance: none;
+}
+
 /* ---------- Holo card ---------- */
 .holo {
   --mx: 50%;

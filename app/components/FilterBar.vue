@@ -62,9 +62,9 @@ function clear() {
         <label class="flex-1 sm:flex-none">
           <span class="sr-only">Sort by</span>
           <select v-model="sort" class="input cursor-pointer">
-            <option value="id-asc">Number, low to high</option>
-            <option value="id-desc">Number, high to low</option>
-            <option value="name">Name, A to Z</option>
+            <option value="id-asc">Number ↑</option>
+            <option value="id-desc">Number ↓</option>
+            <option value="name">Name A–Z</option>
           </select>
         </label>
       </div>
