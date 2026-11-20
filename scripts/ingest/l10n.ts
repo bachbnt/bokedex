@@ -6,10 +6,14 @@ const JA = 'ja'
 const JA_KANA = new Set(['ja-hrkt', 'ja-Hrkt'])
 const JA_ROMA = new Set(['ja-roma', 'roomaji'])
 
+/** Full-width Latin letters and digits (１０まんボルト) read as half-width in the games; punctuation stays Japanese. */
+const halfWidthAlphanumerics = (value: string) =>
+  value.replace(/[Ａ-Ｚａ-ｚ０-９]/g, char => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+
 /** Japanese flavor text lays words out with newlines and ideographic spaces; flatten them for the web. */
 function cleanText(value: string, language: 'en' | 'ja'): string {
   const flat = value.replace(/[\f\n\r]+/g, language === 'ja' ? '' : ' ').replace(/­/g, '')
-  return (language === 'ja' ? flat.replace(/　/g, ' ') : flat).replace(/\s+/g, ' ').trim()
+  return (language === 'ja' ? halfWidthAlphanumerics(flat.replace(/　/g, ' ')) : flat).replace(/\s+/g, ' ').trim()
 }
 
 /** Localized names with English fallback built from the slug when upstream has none. */
@@ -21,8 +25,8 @@ export function names(entries: LangName[] | undefined, slug: string): Names {
   for (const entry of entries ?? []) {
     const language = entry.language.name
     if (language === 'en') en = entry.name
-    else if (language === JA) ja = entry.name
-    else if (JA_KANA.has(language)) jaKana = entry.name
+    else if (language === JA) ja = halfWidthAlphanumerics(entry.name)
+    else if (JA_KANA.has(language)) jaKana = halfWidthAlphanumerics(entry.name)
     else if (JA_ROMA.has(language)) jaRoma = entry.name
   }
 

@@ -36,12 +36,6 @@
           }
         ]
       }
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/200.html"
-      }
     ]
   },
   "emulators": {

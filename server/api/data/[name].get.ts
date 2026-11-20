@@ -1,7 +1,7 @@
 import { readDataset } from '#server/utils/store'
 
 /** The published lists, in the order a page might ask for them. Anything else is rejected. */
-const DATASETS = ['dex', 'pokemon-table', 'moves', 'abilities', 'items', 'locations', 'types', 'reference', 'taxonomy'] as const
+const DATASETS = ['dex', 'pokemon-table', 'moves', 'abilities', 'items', 'berries', 'locations', 'types', 'reference', 'taxonomy'] as const
 
 /**
  * Server-side access to the published lists. The browser reads the same data from the static `/data/*.json`

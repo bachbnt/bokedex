@@ -1,4 +1,4 @@
-import type { AbilityEntry, AbilityRow, BerryData, ItemEntry, ItemRow } from '#shared/types/encyclopedia'
+import type { AbilityEntry, AbilityRow, BerryData, BerryRow, ItemEntry, ItemRow } from '#shared/types/encyclopedia'
 import { effectOf, flavorBy, names } from '#ingest/l10n'
 import type { Machine } from '#ingest/build/moves'
 import type { RawAbility, RawBerry, RawItem, RawItemCategory } from '#ingest/raw'
@@ -12,6 +12,7 @@ export interface AbilitiesBuild {
 export interface ItemsBuild {
   entries: ItemEntry[]
   rows: ItemRow[]
+  berries: BerryRow[]
 }
 
 export function buildAbilities(speciesByPokemonId: Map<number, number>): AbilitiesBuild {
@@ -118,5 +119,7 @@ export function buildItems(speciesByPokemonId: Map<number, number>, machines: Ma
     shortEffect: item.shortEffect,
   }))
 
-  return { entries, rows }
+  const berryRows: BerryRow[] = entries.flatMap(item => (item.berry ? [{ slug: item.slug, names: item.names, ...item.berry }] : []))
+
+  return { entries, rows, berries: berryRows }
 }

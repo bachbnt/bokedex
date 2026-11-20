@@ -8,7 +8,19 @@
     "home": "Bokedex home",
     "main": "Main",
     "language": "Language",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "moves": "Moves",
+    "abilities": "Abilities",
+    "items": "Items",
+    "locations": "Places",
+    "natures": "Natures",
+    "games": "Games",
+    "pokedexes": "Pokédexes",
+    "generations": "Generations",
+    "regions": "Regions",
+    "eggGroups": "Egg groups",
+    "compare": "Compare",
+    "berries": "Berries"
   },
   "search": {
     "open": "Search Bokedex",
@@ -41,7 +53,8 @@
     "listSeparator": ", ",
     "shownInEnglish": "Shown in English: no Japanese text exists for this",
     "unknown": "Unknown",
-    "none": "None"
+    "none": "None",
+    "showMore": "Show {count} more"
   },
   "footer": {
     "data": "Bokedex is a fan project. Data from",
@@ -225,7 +238,38 @@
     "type": "Type",
     "class": "Class",
     "power": "Power",
-    "accuracy": "Acc."
+    "accuracy": "Acc.",
+    "listTitle": "Moves",
+    "listDescription": "Every Pokémon move with type, power, accuracy and who learns it, in English and Japanese.",
+    "listLead": "{count} moves. Filter by type, class or generation, and sort by power, accuracy or PP.",
+    "search": "Search moves by name",
+    "found": "{count} moves found",
+    "emptyTitle": "No moves match",
+    "emptyMessage": "Try a different name or clear a filter.",
+    "kicker": "Move",
+    "seoFallback": "{name}: power, accuracy, effect and which Pokémon learn it.",
+    "priority": "Priority",
+    "target": "Target",
+    "generation": "Introduced",
+    "meta": {
+      "ailment": "Status effect",
+      "category": "Kind of move",
+      "crit": "Critical-hit rate",
+      "flinch": "Flinch chance",
+      "drain": "HP drained",
+      "recoil": "Recoil",
+      "healing": "Healing",
+      "hits": "Hits",
+      "turns": "Turns"
+    },
+    "sections": {
+      "data": "Details",
+      "effects": "Side effects",
+      "machines": "TM and HM numbers",
+      "learnedBy": "Learned by {count} Pokémon",
+      "descriptions": "Descriptions by game"
+    },
+    "noLearners": "No Pokémon learn this move."
   },
   "encounters": {
     "none": "No wild encounters are recorded for this Pokémon.",
@@ -246,7 +290,23 @@
     "matrixCorner": "Attack ↓ Defend →",
     "superEffective": "Super effective",
     "notVeryEffective": "Not very effective",
-    "noEffect": "No effect"
+    "noEffect": "No effect",
+    "detailDescription": "{name} type: strengths, weaknesses, moves and Pokémon.",
+    "kicker": "Type",
+    "offence": {
+      "title": "{type} moves",
+      "double": "Super effective against",
+      "half": "Not very effective against",
+      "none": "No effect on"
+    },
+    "defence": {
+      "title": "Defending as {type}",
+      "double": "Weak to",
+      "half": "Resists",
+      "none": "Immune to"
+    },
+    "pokemonOfType": "Pokémon with this type ({count})",
+    "movesOfType": "Moves of this type ({count})"
   },
   "picker": {
     "title": "Choose a Pokémon",
@@ -319,5 +379,135 @@
     "correctShort": "Correct.",
     "wrongShort": "Not quite.",
     "multiplierResult": "{type} does {multiplier}× here."
+  },
+  "abilities": {
+    "listTitle": "Abilities",
+    "listDescription": "Every Pokémon ability with its effect and the Pokémon that have it.",
+    "listLead": "{count} abilities. Search by name or filter by generation.",
+    "search": "Search abilities by name",
+    "found": "{count} abilities found",
+    "emptyTitle": "No abilities match",
+    "ability": "Ability",
+    "effect": "Effect",
+    "pokemon": "Pokémon",
+    "kicker": "Ability",
+    "seoFallback": "{name}: effect and the Pokémon that have it.",
+    "sections": {
+      "details": "Detailed effect",
+      "pokemon": "{count} Pokémon have this ability"
+    },
+    "noPokemon": "No Pokémon have this ability."
+  },
+  "natures": {
+    "title": "Natures",
+    "description": "All 25 natures with the stats they raise and lower and the flavors Pokémon like.",
+    "lead": "A nature raises one stat by 10% and lowers another by 10%. Pokémon also like and dislike certain berry flavors.",
+    "nature": "Nature",
+    "increases": "Raises",
+    "decreases": "Lowers",
+    "likes": "Likes",
+    "dislikes": "Dislikes",
+    "neutral": "No change to stats"
+  },
+  "items": {
+    "listTitle": "Items",
+    "listDescription": "Every item in the Pokémon games: effects, prices, TMs and which Pokémon hold them.",
+    "listLead": "{count} items. Filter by pocket and category, or search by name.",
+    "berriesLink": "Browse all berries",
+    "search": "Search items by name",
+    "category": "Category",
+    "allCategories": "All categories",
+    "pocket": "Pocket",
+    "found": "{count} items found",
+    "emptyTitle": "No items match",
+    "item": "Item",
+    "cost": "Price",
+    "kicker": "Item",
+    "seoFallback": "{name}: effect, price and which Pokémon hold it.",
+    "fling": "Fling power",
+    "flingEffect": "Fling effect",
+    "teaches": "Teaches",
+    "heldBy": "Held by {count} Pokémon in the wild"
+  },
+  "berries": {
+    "title": "Berries",
+    "description": "All berries with growth time, size, firmness, flavors and Natural Gift data.",
+    "lead": "{count} berries and how they grow.",
+    "berry": "Berry",
+    "giftType": "Natural Gift type",
+    "giftPower": "Natural Gift power",
+    "growthTime": "Growth time",
+    "maxHarvest": "Max harvest",
+    "size": "Size",
+    "smoothness": "Smoothness",
+    "soilDryness": "Soil dryness",
+    "firmness": "Firmness",
+    "flavors": "Flavors"
+  },
+  "locations": {
+    "listTitle": "Places",
+    "listDescription": "Every route, town, cave and building in the Pokémon world, with the wild Pokémon found there.",
+    "listLead": "{count} places. Open one to see which Pokémon appear in each game.",
+    "search": "Search places by name",
+    "region": "Region",
+    "allRegions": "All regions",
+    "onlyWild": "Has wild Pokémon",
+    "found": "{count} places found",
+    "emptyTitle": "No places match",
+    "place": "Place",
+    "areas": "Areas",
+    "pokemon": "Pokémon",
+    "kicker": "Place",
+    "seoFallback": "{name}: which wild Pokémon appear here, in every game.",
+    "wildPokemon": "Wild Pokémon",
+    "noEncounters": "No wild Pokémon are recorded here."
+  },
+  "regions": {
+    "title": "Regions",
+    "description": "The regions of the Pokémon world and their places, Pokédexes and games.",
+    "lead": "Every region, with its places, regional Pokédexes and the games set there.",
+    "kicker": "Region",
+    "seoFallback": "{name}: places, Pokédexes and games.",
+    "games": "Games",
+    "pokedexes": "Pokédexes",
+    "places": "Places ({count})",
+    "wildCount": "{count} Pokémon"
+  },
+  "games": {
+    "title": "Games",
+    "description": "Every mainline Pokémon game by generation, with its region, Pokédexes and TM list.",
+    "lead": "Every game, grouped by generation. Open one for its region, Pokédexes and TM list.",
+    "kicker": "Game",
+    "seoFallback": "{name}: region, Pokédexes and TM list.",
+    "versions": "Versions",
+    "machines": "TM and HM list ({count})",
+    "machine": "Number"
+  },
+  "pokedexes": {
+    "title": "Regional Pokédexes",
+    "description": "Every regional Pokédex with its Pokémon in the order each game numbers them.",
+    "lead": "Each game numbers its Pokémon differently. Open a Pokédex to see the order.",
+    "count": "{count} Pokémon",
+    "kicker": "Pokédex",
+    "seoFallback": "{name} Pokédex: every Pokémon in game order."
+  },
+  "generations": {
+    "title": "Generations",
+    "description": "The nine generations of Pokémon and what each one introduced.",
+    "lead": "Each generation's new Pokémon, types, abilities and moves.",
+    "kicker": "Generation",
+    "seoFallback": "Generation {n}: new Pokémon, types, abilities and moves.",
+    "pokemon": "New Pokémon ({count})",
+    "types": "New types",
+    "abilities": "New abilities ({count})",
+    "moves": "New moves ({count})"
+  },
+  "eggGroups": {
+    "title": "Egg groups",
+    "description": "Pokémon can breed with others in a shared egg group.",
+    "lead": "Pokémon in a shared egg group can breed together.",
+    "count": "{count} Pokémon",
+    "kicker": "Egg group",
+    "seoFallback": "{name} egg group: every Pokémon that belongs to it."
   }
 }

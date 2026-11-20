@@ -35,6 +35,9 @@ class Collector {
   }
 
   build(): Refs {
+    // Move rows are shown with their class (physical, special, status), so label it too.
+    for (const slug of this.moves) this.tax('damage-class', this.lookup.moves.get(slug)?.damageClass)
+
     const pick = <K, V>(keys: Set<K>, source: Map<K, V>): Record<string, V> => {
       const result: Record<string, V> = {}
       for (const key of keys) {
@@ -48,9 +51,9 @@ class Collector {
     for (const [kind, slugs] of this.taxonomy) {
       const table = this.lookup.taxonomy[kind]
       const picked: Record<string, (typeof table)[string]> = {}
-      for (const slug of slugs) {
-        const names = table[slug]
-        if (names) picked[slug] = names
+      // Walk the table, not the mentions: tables list versions in release order, and pages rely on that.
+      for (const [slug, names] of Object.entries(table)) {
+        if (slugs.has(slug)) picked[slug] = names
       }
       taxonomy[kind] = picked
     }
@@ -173,6 +176,7 @@ const collectors: { [K in EntityKind]: (entity: EntityByKind[K], c: Collector) =
     }
   },
   'pokedexes': (pokedex, c) => {
+    c.tax('pokedex', pokedex.slug)
     c.tax('region', pokedex.region)
     c.pokemonIds(pokedex.entries.map(entry => entry.id))
   },

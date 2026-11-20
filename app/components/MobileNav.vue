@@ -37,7 +37,7 @@ watch(barePath, () => { sheetOpen.value = false })
       :aria-label="t('nav.main')"
     >
       <NuxtLinkLocale
-        v-for="item in PRIMARY_NAV"
+        v-for="item in MOBILE_NAV"
         :key="item.to"
         :to="item.to"
         class="relative flex min-w-14 flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-[0.7rem] font-semibold transition-colors"

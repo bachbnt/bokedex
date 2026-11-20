@@ -10,7 +10,7 @@ export const SEARCH_ROUTES: Record<SearchKind, string> = {
   ability: '/abilities/',
   item: '/items/',
   location: '/locations/',
-  nature: '/natures#',
+  nature: '/natures?nature=',
   type: '/types/',
 }
 

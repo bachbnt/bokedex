@@ -98,6 +98,7 @@ function main(): void {
     writeJson(PUBLIC_DIR, 'moves.json', moves.rows)
     writeJson(PUBLIC_DIR, 'abilities.json', abilities.rows)
     writeJson(PUBLIC_DIR, 'items.json', items.rows)
+    writeJson(PUBLIC_DIR, 'berries.json', items.berries)
     writeJson(PUBLIC_DIR, 'locations.json', world.rows)
     writeJson(PUBLIC_DIR, 'types.json', typeRows)
     writeJson(PUBLIC_DIR, 'reference.json', reference)

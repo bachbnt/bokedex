@@ -5,7 +5,10 @@ import tailwindcss from '@tailwindcss/vite'
 const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL ?? 'https://bokedex.web.app'
 
 /** Pages that are not one-per-entity. Each exists in every language. */
-const STATIC_ROUTES = ['/', '/types', '/team', '/play']
+const STATIC_ROUTES = [
+  '/', '/types', '/team', '/play', '/moves', '/abilities', '/natures', '/items', '/berries',
+  '/locations', '/games', '/pokedex', '/generations', '/regions', '/egg-groups',
+]
 
 /** Entity pages (`/pokemon/25`, `/moves/thunderbolt`...) written by `npm run ingest`. */
 function entityRoutes(): string[] {

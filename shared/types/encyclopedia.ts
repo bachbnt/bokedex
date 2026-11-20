@@ -328,6 +328,12 @@ export interface BerryData {
   flavors: { flavor: string, potency: number }[]
 }
 
+/** One row of the berries table: the item it belongs to plus its growing data. */
+export interface BerryRow extends BerryData {
+  slug: string
+  names: Names
+}
+
 export interface ItemEntry {
   id: number
   slug: string

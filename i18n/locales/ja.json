@@ -8,7 +8,19 @@
     "home": "Bokedex ホーム",
     "main": "メインメニュー",
     "language": "言語",
-    "skip": "本文へスキップ"
+    "skip": "本文へスキップ",
+    "moves": "わざ",
+    "abilities": "とくせい",
+    "items": "どうぐ",
+    "locations": "場所",
+    "natures": "せいかく",
+    "games": "ゲーム",
+    "pokedexes": "地方図鑑",
+    "generations": "世代",
+    "regions": "地方",
+    "eggGroups": "タマゴグループ",
+    "compare": "比べる",
+    "berries": "きのみ"
   },
   "search": {
     "open": "Bokedexを検索",
@@ -41,7 +53,8 @@
     "listSeparator": "、",
     "shownInEnglish": "英語で表示：日本語の記述がありません",
     "unknown": "不明",
-    "none": "なし"
+    "none": "なし",
+    "showMore": "さらに{count}件表示"
   },
   "footer": {
     "data": "Bokedexは非公式のファンプロジェクトです。データ提供:",
@@ -225,7 +238,38 @@
     "type": "タイプ",
     "class": "分類",
     "power": "威力",
-    "accuracy": "命中"
+    "accuracy": "命中",
+    "listTitle": "わざ一覧",
+    "listDescription": "全わざのタイプ・威力・命中・習得ポケモンを日英で調べられます。",
+    "listLead": "{count}個のわざ。タイプ・分類・世代で絞り込み、威力・命中・PPで並べ替えられます。",
+    "search": "わざ名で検索",
+    "found": "{count}件のわざが見つかりました",
+    "emptyTitle": "一致するわざがありません",
+    "emptyMessage": "別の名前を試すか、絞り込みを解除してください。",
+    "kicker": "わざ",
+    "seoFallback": "{name}の威力・命中・効果・習得ポケモン。",
+    "priority": "優先度",
+    "target": "対象",
+    "generation": "登場世代",
+    "meta": {
+      "ailment": "状態異常",
+      "category": "わざの種類",
+      "crit": "急所ランク",
+      "flinch": "ひるみ確率",
+      "drain": "HP吸収",
+      "recoil": "反動",
+      "healing": "回復",
+      "hits": "連続回数",
+      "turns": "継続ターン"
+    },
+    "sections": {
+      "data": "データ",
+      "effects": "追加効果",
+      "machines": "わざマシン番号",
+      "learnedBy": "覚えるポケモン（{count}匹）",
+      "descriptions": "ゲームごとの説明"
+    },
+    "noLearners": "このわざを覚えるポケモンはいません。"
   },
   "encounters": {
     "none": "このポケモンの野生での出現記録はありません。",
@@ -246,7 +290,23 @@
     "matrixCorner": "攻撃 ↓ 防御 →",
     "superEffective": "効果ばつぐん",
     "notVeryEffective": "いまひとつ",
-    "noEffect": "効果なし"
+    "noEffect": "効果なし",
+    "detailDescription": "{name}タイプの得意・苦手、わざ、ポケモン。",
+    "kicker": "タイプ",
+    "offence": {
+      "title": "{type}タイプのわざの相性",
+      "double": "効果ばつぐん",
+      "half": "いまひとつ",
+      "none": "効果なし"
+    },
+    "defence": {
+      "title": "{type}タイプで受けるとき",
+      "double": "弱点",
+      "half": "耐性",
+      "none": "無効"
+    },
+    "pokemonOfType": "このタイプのポケモン（{count}匹）",
+    "movesOfType": "このタイプのわざ（{count}個）"
   },
   "picker": {
     "title": "ポケモンを選ぶ",
@@ -319,5 +379,135 @@
     "correctShort": "正解。",
     "wrongShort": "残念。",
     "multiplierResult": "{type}は{multiplier}倍です。"
+  },
+  "abilities": {
+    "listTitle": "とくせい一覧",
+    "listDescription": "全とくせいの効果と、持っているポケモンを調べられます。",
+    "listLead": "{count}個のとくせい。名前で検索、世代で絞り込み。",
+    "search": "とくせい名で検索",
+    "found": "{count}件のとくせいが見つかりました",
+    "emptyTitle": "一致するとくせいがありません",
+    "ability": "とくせい",
+    "effect": "効果",
+    "pokemon": "ポケモン",
+    "kicker": "とくせい",
+    "seoFallback": "{name}の効果と持っているポケモン。",
+    "sections": {
+      "details": "詳しい効果",
+      "pokemon": "このとくせいを持つポケモン（{count}匹）"
+    },
+    "noPokemon": "このとくせいを持つポケモンはいません。"
+  },
+  "natures": {
+    "title": "せいかく一覧",
+    "description": "25種類のせいかくと、上がる・下がる能力、好きな味・苦手な味。",
+    "lead": "せいかくは、ある能力を10%上げ、別の能力を10%下げます。ポケモンには好きな味・苦手な味もあります。",
+    "nature": "せいかく",
+    "increases": "上がる能力",
+    "decreases": "下がる能力",
+    "likes": "好きな味",
+    "dislikes": "苦手な味",
+    "neutral": "能力変化なし"
+  },
+  "items": {
+    "listTitle": "どうぐ一覧",
+    "listDescription": "ポケモンの全どうぐの効果・価格・わざマシン・持っているポケモン。",
+    "listLead": "{count}個のどうぐ。ポケットやカテゴリで絞り込み、名前でも検索できます。",
+    "berriesLink": "きのみ一覧を見る",
+    "search": "どうぐ名で検索",
+    "category": "カテゴリ",
+    "allCategories": "すべてのカテゴリ",
+    "pocket": "ポケット",
+    "found": "{count}件のどうぐが見つかりました",
+    "emptyTitle": "一致するどうぐがありません",
+    "item": "どうぐ",
+    "cost": "価格",
+    "kicker": "どうぐ",
+    "seoFallback": "{name}の効果・価格・持っているポケモン。",
+    "fling": "なげつける威力",
+    "flingEffect": "なげつける効果",
+    "teaches": "覚えられるわざ",
+    "heldBy": "野生で持っているポケモン（{count}匹）"
+  },
+  "berries": {
+    "title": "きのみ",
+    "description": "全きのみの成長時間・大きさ・硬さ・味・しぜんのめぐみのデータ。",
+    "lead": "{count}種類のきのみと育て方のデータ。",
+    "berry": "きのみ",
+    "giftType": "しぜんのめぐみ（タイプ）",
+    "giftPower": "しぜんのめぐみ（威力）",
+    "growthTime": "成長時間",
+    "maxHarvest": "最大収穫数",
+    "size": "大きさ",
+    "smoothness": "なめらかさ",
+    "soilDryness": "土の乾きやすさ",
+    "firmness": "硬さ",
+    "flavors": "味"
+  },
+  "locations": {
+    "listTitle": "場所一覧",
+    "listDescription": "ポケモン世界のすべての道路・町・洞窟・建物と、そこで出会える野生ポケモン。",
+    "listLead": "{count}か所の場所。開くと、ゲームごとに出現するポケモンがわかります。",
+    "search": "場所名で検索",
+    "region": "地方",
+    "allRegions": "すべての地方",
+    "onlyWild": "野生ポケモンがいる場所のみ",
+    "found": "{count}か所が見つかりました",
+    "emptyTitle": "一致する場所がありません",
+    "place": "場所",
+    "areas": "エリア数",
+    "pokemon": "ポケモン",
+    "kicker": "場所",
+    "seoFallback": "{name}で出会える野生ポケモン（ゲーム別）。",
+    "wildPokemon": "野生ポケモン",
+    "noEncounters": "この場所の野生ポケモンの記録はありません。"
+  },
+  "regions": {
+    "title": "地方",
+    "description": "ポケモン世界の地方と、その場所・図鑑・ゲーム。",
+    "lead": "各地方の場所・地方図鑑・舞台となるゲーム。",
+    "kicker": "地方",
+    "seoFallback": "{name}の場所・図鑑・ゲーム。",
+    "games": "ゲーム",
+    "pokedexes": "地方図鑑",
+    "places": "場所（{count}か所）",
+    "wildCount": "{count}匹"
+  },
+  "games": {
+    "title": "ゲーム一覧",
+    "description": "全ゲームを世代別に。地方・図鑑・わざマシン一覧つき。",
+    "lead": "全ゲームを世代別に表示。地方・図鑑・わざマシン一覧を確認できます。",
+    "kicker": "ゲーム",
+    "seoFallback": "{name}の地方・図鑑・わざマシン一覧。",
+    "versions": "バージョン",
+    "machines": "わざマシン一覧（{count}個）",
+    "machine": "番号"
+  },
+  "pokedexes": {
+    "title": "地方図鑑",
+    "description": "各ゲームの地方図鑑と、ゲーム内の番号順のポケモン。",
+    "lead": "ゲームごとにポケモンの番号は異なります。図鑑を開くと並び順を確認できます。",
+    "count": "{count}匹",
+    "kicker": "図鑑",
+    "seoFallback": "{name}図鑑：ゲーム内の順番で全ポケモン。"
+  },
+  "generations": {
+    "title": "世代",
+    "description": "ポケモンの9つの世代と、各世代で登場したもの。",
+    "lead": "各世代で新しく登場したポケモン・タイプ・とくせい・わざ。",
+    "kicker": "世代",
+    "seoFallback": "第{n}世代の新ポケモン・タイプ・とくせい・わざ。",
+    "pokemon": "新ポケモン（{count}匹）",
+    "types": "新タイプ",
+    "abilities": "新とくせい（{count}個）",
+    "moves": "新わざ（{count}個）"
+  },
+  "eggGroups": {
+    "title": "タマゴグループ",
+    "description": "同じタマゴグループのポケモン同士は繁殖できます。",
+    "lead": "同じタマゴグループのポケモンは一緒に繁殖できます。",
+    "count": "{count}匹",
+    "kicker": "タマゴグループ",
+    "seoFallback": "{name}グループに属するポケモン一覧。"
   }
 }
