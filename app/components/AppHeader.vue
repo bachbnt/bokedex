@@ -61,10 +61,12 @@ onKeyStroke('Escape', () => { moreOpen.value = false })
               v-for="item in MORE_NAV"
               :key="item.to"
               :to="item.to"
-              class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium hover:bg-surface-2"
+              class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium"
+              :class="isNavActive(item.to, barePath) ? 'bg-ink text-bg' : 'hover:bg-surface-2'"
+              :aria-current="isNavActive(item.to, barePath) ? 'page' : undefined"
               role="menuitem"
             >
-              <AppIcon :name="item.icon" :size="17" class="text-muted" />
+              <AppIcon :name="item.icon" :size="17" :class="isNavActive(item.to, barePath) ? '' : 'text-muted'" />
               {{ t(item.label) }}
             </NuxtLinkLocale>
           </div>

@@ -4,6 +4,7 @@ const collection = useCollectionStore()
 const barePath = useBarePath()
 const searchOpen = useState('search:open', () => false)
 const sheetOpen = ref(false)
+const moreActive = computed(() => MORE_NAV.some(item => isNavActive(item.to, barePath.value)))
 
 watch(barePath, () => { sheetOpen.value = false })
 </script>
@@ -24,10 +25,12 @@ watch(barePath, () => { sheetOpen.value = false })
         v-for="item in MORE_NAV"
         :key="item.to"
         :to="item.to"
-        class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-2"
+        class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium"
+        :class="isNavActive(item.to, barePath) ? 'bg-ink text-bg' : 'hover:bg-surface-2'"
+        :aria-current="isNavActive(item.to, barePath) ? 'page' : undefined"
         role="menuitem"
       >
-        <AppIcon :name="item.icon" :size="18" class="text-muted" />
+        <AppIcon :name="item.icon" :size="18" :class="isNavActive(item.to, barePath) ? '' : 'text-muted'" />
         {{ t(item.label) }}
       </NuxtLinkLocale>
     </div>
@@ -65,7 +68,8 @@ watch(barePath, () => { sheetOpen.value = false })
       <button
         v-if="MORE_NAV.length"
         type="button"
-        class="flex min-w-14 flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-[0.7rem] font-semibold text-muted"
+        class="flex min-w-14 flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-[0.7rem] font-semibold transition-colors"
+        :class="moreActive ? 'bg-ink text-bg' : 'text-muted'"
         :aria-expanded="sheetOpen"
         @click="sheetOpen = !sheetOpen"
       >

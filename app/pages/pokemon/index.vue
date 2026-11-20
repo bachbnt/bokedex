@@ -78,7 +78,7 @@ const statLabel = (key: string) => (key === 'total' ? t('pokemon.statTotal') : l
     </header>
 
     <section class="panel grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4" :aria-label="t('filters.region')">
-      <label class="relative block sm:col-span-2">
+      <label class="relative block self-end sm:col-span-2">
         <span class="sr-only">{{ t('filters.searchLabel') }}</span>
         <AppIcon name="search" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
         <input v-model="filters.q" type="search" class="input !pl-12" :placeholder="t('filters.searchPlaceholder')" autocomplete="off">
