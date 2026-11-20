@@ -1,9 +1,14 @@
 import type { DexEntry, DexGeneration, DexIndex, TypeInfo } from '#shared/types/pokedex'
-import type { ApiList, RawGeneration, RawType } from '#server/types/pokeapi'
-import { cacheOptions, idFromUrl, mapLimit, pokeFetch, pokeFetchUrl } from '#server/utils/pokeapi'
+import type { ApiList, RawGeneration, RawType } from '#shared/pokeapi/types'
+import { idFromUrl, mapLimit, type PokeApi } from '#shared/pokeapi/client'
+
+export interface DexSnapshot {
+  index: DexIndex
+  types: TypeInfo[]
+}
 
 interface TypeData extends TypeInfo {
-  /** Dex id -> slot, for default-form Pokémon only (filtered later). */
+  /** Dex id -> slot, for every Pokémon form that carries the type (non-default forms are filtered later). */
   members: { id: number, slot: number }[]
 }
 
@@ -13,9 +18,9 @@ const names = (refs: { name: string }[]) => refs.map(ref => ref.name)
  * One request per type. Gives us both the damage chart and which Pokémon
  * carry each type, so the grid never needs a request per Pokémon.
  */
-const loadTypeData = defineCachedFunction(async (): Promise<TypeData[]> => {
-  const list = await pokeFetch<ApiList>('type?limit=200')
-  const raw = await mapLimit(list.results, ref => pokeFetchUrl<RawType>(ref.url))
+async function loadTypeData(api: PokeApi): Promise<TypeData[]> {
+  const list = await api.get<ApiList>('type?limit=200')
+  const raw = await mapLimit(list.results, ref => api.get<RawType>(ref.url))
 
   return raw.map(({ name, damage_relations: rel, pokemon }) => ({
     name,
@@ -29,13 +34,13 @@ const loadTypeData = defineCachedFunction(async (): Promise<TypeData[]> => {
     },
     members: pokemon.map(entry => ({ id: idFromUrl(entry.pokemon.url), slot: entry.slot })),
   }))
-}, cacheOptions('type-data'))
+}
 
 const toGenerationLabel = (name: string) => `Gen ${name.replace('generation-', '').toUpperCase()}`
 
-const loadGenerations = defineCachedFunction(async () => {
-  const list = await pokeFetch<ApiList>('generation?limit=100')
-  const raw = await mapLimit(list.results, ref => pokeFetchUrl<RawGeneration>(ref.url))
+async function loadGenerations(api: PokeApi) {
+  const list = await api.get<ApiList>('generation?limit=100')
+  const raw = await mapLimit(list.results, ref => api.get<RawGeneration>(ref.url))
 
   const generations: DexGeneration[] = []
   const genBySpecies = new Map<number, number>()
@@ -53,18 +58,20 @@ const loadGenerations = defineCachedFunction(async () => {
   })
 
   generations.sort((a, b) => a.id - b.id)
-  return { generations, genBySpecies: [...genBySpecies] as [number, number][] }
-}, cacheOptions('generations'))
+  return { generations, genBySpecies }
+}
 
-/** The full dex in ~30 upstream calls, regardless of how many Pokémon exist. */
-export const getDexIndex = defineCachedFunction(async (): Promise<DexIndex> => {
+/**
+ * The whole dex and type chart in about 30 upstream calls, regardless of how many
+ * Pokémon exist. Runs at build time to produce the static snapshot the app ships with.
+ */
+export async function buildDexSnapshot(api: PokeApi): Promise<DexSnapshot> {
   const [species, typeData, { generations, genBySpecies }] = await Promise.all([
-    pokeFetch<ApiList>('pokemon-species?limit=100000'),
-    loadTypeData(),
-    loadGenerations(),
+    api.get<ApiList>('pokemon-species?limit=100000'),
+    loadTypeData(api),
+    loadGenerations(api),
   ])
 
-  const genMap = new Map(genBySpecies)
   const typesById = new Map<number, { slot: number, type: string }[]>()
   for (const type of typeData) {
     for (const { id, slot } of type.members) {
@@ -78,32 +85,25 @@ export const getDexIndex = defineCachedFunction(async (): Promise<DexIndex> => {
     .map((ref) => {
       const id = idFromUrl(ref.url)
       const types = (typesById.get(id) ?? []).sort((a, b) => a.slot - b.slot).map(entry => entry.type)
-      return { id, name: ref.name, types, gen: genMap.get(id) ?? 0 }
+      return { id, name: ref.name, types, gen: genBySpecies.get(id) ?? 0 }
     })
     // Species not yet fully populated upstream have no types; hide until they do.
     .filter(entry => entry.types.length > 0)
     .sort((a, b) => a.id - b.id)
 
   const usedTypes = new Set(pokemon.flatMap(entry => entry.types))
+  // Relations can mention types without Pokémon (e.g. stellar); drop them to keep the chart square.
+  const clean = (list: string[]) => list.filter(name => usedTypes.has(name))
 
-  return {
+  const index: DexIndex = {
     total: pokemon.length,
-    generations: generations.filter(gen => pokemon.some(entry => entry.gen === gen.id)),
+    generations: generations.filter(generation => pokemon.some(entry => entry.gen === generation.id)),
     types: typeData.map(type => type.name).filter(name => usedTypes.has(name)),
     pokemon,
   }
-}, cacheOptions('dex-index'))
 
-/** Damage relations for the types that matter in-game. */
-export const getTypeInfos = defineCachedFunction(async (): Promise<TypeInfo[]> => {
-  const [typeData, index] = await Promise.all([loadTypeData(), getDexIndex()])
-  const playable = new Set(index.types)
-
-  // Relations can mention types without Pokémon (e.g. stellar); drop them to keep the chart square.
-  const clean = (list: string[]) => list.filter(name => playable.has(name))
-
-  return typeData
-    .filter(type => playable.has(type.name))
+  const types: TypeInfo[] = typeData
+    .filter(type => usedTypes.has(type.name))
     .map(({ name, relations }) => ({
       name,
       relations: {
@@ -115,4 +115,6 @@ export const getTypeInfos = defineCachedFunction(async (): Promise<TypeInfo[]> =
         noFrom: clean(relations.noFrom),
       },
     }))
-}, cacheOptions('type-infos'))
+
+  return { index, types }
+}

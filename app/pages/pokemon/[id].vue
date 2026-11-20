@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PokemonDetail, PokemonMoves } from '#shared/types/pokedex'
+import { PokeApiError } from '#shared/pokeapi/client'
 
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
@@ -13,18 +13,40 @@ const collection = useCollectionStore()
 const { pokemon: dex } = useDex()
 const { play, playing } = useCry()
 
-const { data: pokemon, error } = await useFetch<PokemonDetail>(() => `/api/pokemon/${id.value}`, {
-  key: computed(() => `pokemon-${id.value}`),
-})
+const pokemonService = usePokemonService()
+
+// Details come straight from PokeAPI in the browser; this route is client-rendered (see routeRules).
+const { data: pokemon, error } = await useAsyncData(
+  () => `pokemon-${id.value}`,
+  async () => {
+    try {
+      return await pokemonService.detail(id.value)
+    }
+    catch (cause) {
+      const notFound = cause instanceof PokeApiError && cause.status === 404
+      throw createError({
+        statusCode: notFound ? 404 : 502,
+        message: notFound ? 'Pokémon not found' : 'Could not reach PokeAPI. Try again in a moment.',
+        fatal: true,
+      })
+    }
+  },
+  { watch: [id] },
+)
 
 if (error.value || !pokemon.value) {
-  throw createError({ statusCode: 404, message: 'Pokémon not found', fatal: true })
+  throw createError({
+    statusCode: error.value?.statusCode ?? 404,
+    message: error.value?.message ?? 'Pokémon not found',
+    fatal: true,
+  })
 }
 
 // Moves are heavy (one upstream call per move), so they load after first paint.
-const { data: moves, status: movesStatus, error: movesError, refresh: refreshMoves } = useLazyFetch<PokemonMoves>(
-  () => `/api/pokemon/${id.value}/moves`,
-  { key: computed(() => `moves-${id.value}`), server: false },
+const { data: moves, status: movesStatus, error: movesError, refresh: refreshMoves } = useLazyAsyncData(
+  () => `moves-${id.value}`,
+  () => pokemonService.moves(id.value),
+  { server: false, watch: [id] },
 )
 
 const shiny = ref(false)

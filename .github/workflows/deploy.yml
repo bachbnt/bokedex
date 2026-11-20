@@ -1,0 +1,40 @@
+name: Build and deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly rebuild so new Pokémon, types and generations from PokeAPI reach the dex snapshot.
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      # Without the service-account secret the job still builds and typechecks, and skips only the deploy.
+      HAS_FIREBASE_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BOKEDEX != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run generate
+
+      - name: Deploy to Firebase Hosting
+        if: env.HAS_FIREBASE_SECRET == 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BOKEDEX }}
+          projectId: bokedex
+          channelId: live

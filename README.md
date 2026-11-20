@@ -40,17 +40,38 @@ npm run dev          # http://localhost:3000
 | Script | Purpose |
 | --- | --- |
 | `npm run dev` | Development server with hot reload |
-| `npm run build` | Production build into `.output/` |
-| `node .output/server/index.mjs` | Run the production build |
+| `npm run generate` | Build the static site into `.output/public` |
+| `npm run preview` | Serve the built site at http://localhost:5002 with the production rewrites (needs the Firebase CLI) |
 | `npm run typecheck` | Type-check the app, server and shared code |
-
-The first visit after startup takes a few seconds while the Pokédex index is built from PokeAPI. After that it is served from cache.
 
 ## Built to grow with PokeAPI
 
-Nothing enumerates Pokémon, types or generations. When PokeAPI adds a Pokémon, a type or a generation, Bokedex picks it up after the cache refreshes (24 hours by default), with no code change or deploy. It also shows up in the filters, the type chart, team analysis and the quizzes.
+Nothing enumerates Pokémon, types or generations. The Pokédex index and type chart are baked into static JSON at build time from about 30 PokeAPI calls, and a weekly scheduled build refreshes them. When PokeAPI adds a Pokémon, a type or a generation, the next build picks it up, and it shows up in the filters, the type chart, team analysis and the quizzes. Details and moves for each Pokémon are fetched live from PokeAPI in the browser.
 
-The index is built from about 30 upstream calls regardless of how many Pokémon exist. See [Architecture](docs/ARCHITECTURE.md) for how.
+It is a static site, so it needs no server and hosts for free. See [Architecture](docs/ARCHITECTURE.md) for how it works and the trade-offs.
+
+## Deploy to Firebase Hosting
+
+The site deploys to Firebase Hosting on the **free Spark plan**; no Cloud Functions or billing needed.
+
+Requirements: the Firebase CLI, signed in to the account that owns the project (`firebase login:use <email>`, or pass `--account <email>`).
+
+```bash
+npm run generate                                          # build the static site into .output/public
+firebase deploy --only hosting \
+  --project bokedex --account <your-account-email>        # deploy (or: npm run deploy:firebase)
+```
+
+To try the built site locally first, run `npm run preview`. It uses the Hosting emulator, so the rewrites in `firebase.json` apply exactly as they do in production.
+
+### Automatic weekly refresh
+
+`.github/workflows/deploy.yml` typechecks, builds and deploys on every push to `main` and every Monday, so new Pokémon appear without any manual step. Until you add a deploy key it still builds and typechecks, and skips only the deploy.
+
+To enable the deploy step:
+
+1. In the Firebase console open **Project settings, Service accounts**, and generate a new private key.
+2. In GitHub open **Settings, Secrets and variables, Actions** and add a repository secret named `FIREBASE_SERVICE_ACCOUNT_BOKEDEX` containing the full JSON.
 
 ## Documentation
 
@@ -62,16 +83,16 @@ The index is built from about 30 upstream calls regardless of how many Pokémon 
 ## Project structure
 
 ```text
-server/   Nitro API: routes, PokeAPI client, caching, upstream types
-shared/   Types and helpers used by both server and app
+shared/   PokeAPI client, snapshot builder, Pokémon service, shared types
 app/      Vue app: pages, components, composables, stores, utils
+server/   Build-time routes that produce dex.json and types.json
 docs/     Architecture, design and screenshots
 ```
 
 ## Conventions
 
 - **No relative `../` imports.** Use aliases: `~/` (app), `#shared/` (shared) and `#server/` (server).
-- **No `any`.** PokeAPI payloads are typed in `server/types/pokeapi.ts`.
+- **No `any`.** PokeAPI payloads are typed in `shared/pokeapi/types.ts`.
 - `npm run typecheck` must pass. The root `tsconfig.json` points at the types Nuxt generates, which is also what makes the IDE resolve auto-imports such as `defineEventHandler`. If your editor shows red squiggles after a fresh clone, run `npm install` (it runs `nuxt prepare`) and restart the TypeScript server.
 
 ## Add a mini-game
@@ -83,19 +104,19 @@ docs/     Architecture, design and screenshots
 
 ## Configuration
 
-Override with environment variables (see [Architecture](docs/ARCHITECTURE.md#configuration)):
+Override with environment variables at build time (see [Architecture](docs/ARCHITECTURE.md#configuration)):
 
 | Variable | Default |
 | --- | --- |
-| `NUXT_POKE_API_BASE` | `https://pokeapi.co/api/v2` |
-| `NUXT_CACHE_MAX_AGE` | `86400` (seconds) |
+| `NUXT_PUBLIC_POKE_API_BASE` | `https://pokeapi.co/api/v2` |
 | `NUXT_PUBLIC_SPRITE_BASE` | jsDelivr mirror of the PokeAPI sprites |
 | `NUXT_PUBLIC_CRY_BASE` | jsDelivr mirror of the PokeAPI cries |
 
 ## Notes
 
+- New Pokémon appear after the next build (weekly by default), not instantly.
+- `/pokemon/:id` pages render in the browser, so there is no per-Pokémon HTML for search engines or link previews.
 - Moves show the newest game that has level-up data for that Pokémon, which can be a game with a shorter move list.
-- By default the server cache lives in memory and resets on restart. Mount a persistent Nitro storage driver for production.
 
 ## Credits
 

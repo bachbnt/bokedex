@@ -12,7 +12,7 @@ export interface DefenseGroups {
 
 /** Type effectiveness derived from PokeAPI damage relations — no hardcoded chart. */
 export function useTypeChart() {
-  const { data, status, error } = useFetch<TypeInfo[]>('/api/types', { key: 'types', default: () => [] })
+  const { data, status, error } = useFetch<TypeInfo[]>('/api/types.json', { key: 'types', default: () => [] })
 
   const types = computed(() => (data.value ?? []).map(type => type.name))
 

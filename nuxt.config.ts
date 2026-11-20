@@ -35,20 +35,27 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Server-only: where Pokémon data comes from. Swap for a self-hosted PokeAPI if needed.
-    pokeApiBase: 'https://pokeapi.co/api/v2',
-    // How long (seconds) upstream data stays fresh in the Nitro cache.
-    cacheMaxAge: 60 * 60 * 24,
+    // Public because the browser fetches Pokémon details straight from PokeAPI.
+    // Swap for a self-hosted PokeAPI mirror if needed.
     public: {
+      pokeApiBase: 'https://pokeapi.co/api/v2',
       // Sprites are derived from the dex id, so new Pokémon get artwork automatically.
       spriteBase: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon',
       cryBase: 'https://cdn.jsdelivr.net/gh/PokeAPI/cries@main/cries/pokemon/latest',
     },
   },
 
+  // Static hosting: `nuxt generate` bakes the dex and type chart into JSON and prerenders the main
+  // pages. Pokémon detail pages are rendered in the browser because there are too many to prerender.
+  nitro: {
+    prerender: {
+      crawlLinks: false,
+      routes: ['/', '/types', '/team', '/play', '/api/dex.json', '/api/types.json'],
+    },
+  },
+
   routeRules: {
-    '/': { swr: 3600 },
-    '/types': { swr: 3600 },
+    '/pokemon/**': { ssr: false },
   },
 
   app: {

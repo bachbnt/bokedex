@@ -1,49 +1,21 @@
 <script setup lang="ts">
 const PAGE_SIZE = 48
 
-const route = useRoute()
-const router = useRouter()
 const collection = useCollectionStore()
 const { pokemon, generations, types, status, error, refresh, data } = useDex()
+const { query, type, gen, sort, onlyFavorites, filtered } = useDexFilters()
 
 useSeoMeta({
   title: 'Bokedex: every Pokémon, one search away',
   description: 'Browse the full Pokédex, filter by type and generation, and open any Pokémon for stats, evolutions and moves.',
 })
 
-// Filter state lives in the URL so a search can be shared or bookmarked.
-const queryParam = (key: string) => (typeof route.query[key] === 'string' ? (route.query[key] as string) : '')
-const query = ref(queryParam('q'))
-const type = ref(queryParam('type'))
-const gen = ref(Number(queryParam('gen')) || 0)
-const sort = ref<SortKey>(SORT_KEYS.includes(queryParam('sort') as SortKey) ? (queryParam('sort') as SortKey) : 'id-asc')
-const onlyFavorites = ref(queryParam('fav') === '1')
-
-const filtered = computed(() => filterDex(pokemon.value, {
-  query: query.value,
-  type: type.value,
-  gen: gen.value,
-  onlyFavorites: onlyFavorites.value,
-  favorites: collection.favorites,
-  sort: sort.value,
-}))
-
 const visibleCount = ref(PAGE_SIZE)
 const visible = computed(() => filtered.value.slice(0, visibleCount.value))
 const hasMore = computed(() => visibleCount.value < filtered.value.length)
 
-watchDebounced([query, type, gen, sort, onlyFavorites], () => {
-  visibleCount.value = PAGE_SIZE
-  router.replace({
-    query: {
-      q: query.value || undefined,
-      type: type.value || undefined,
-      gen: gen.value || undefined,
-      sort: sort.value === 'id-asc' ? undefined : sort.value,
-      fav: onlyFavorites.value ? '1' : undefined,
-    },
-  })
-}, { debounce: 250 })
+// A new search starts from the top of the results again.
+watch([query, type, gen, sort, onlyFavorites], () => { visibleCount.value = PAGE_SIZE })
 
 const sentinel = ref<HTMLElement | null>(null)
 useIntersectionObserver(sentinel, ([entry]) => {

@@ -14,7 +14,16 @@ type ActiveGame = (typeof GAMES)[number]['key']
 const route = useRoute()
 const router = useRouter()
 
-const active = ref<ActiveGame>(GAMES.some(game => game.key === route.query.game) ? (route.query.game as ActiveGame) : 'silhouette')
+const isGameKey = (value: unknown): value is ActiveGame => GAMES.some(game => game.key === value)
+
+const active = ref<ActiveGame>('silhouette')
+
+// Follow the URL with a watcher: on a prerendered page Nuxt hydrates with the query stripped,
+// then applies the real one, so reading it once at setup would miss `?game=typeMaster`.
+watch(() => route.query.game, (game) => {
+  if (isGameKey(game)) active.value = game
+}, { immediate: true })
+
 watch(active, game => router.replace({ query: { game } }))
 
 // Both games need the dex and the chart; load once here so each game starts instantly.

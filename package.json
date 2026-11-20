@@ -8,9 +8,10 @@
     "dev": "nuxt dev",
     "build": "nuxt build",
     "generate": "nuxt generate",
-    "preview": "nuxt preview",
+    "preview": "firebase emulators:start --only hosting",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "deploy:firebase": "npm run generate && firebase deploy --only hosting"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.11.4",

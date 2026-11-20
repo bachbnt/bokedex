@@ -5,7 +5,7 @@ import type { DexIndex } from '#shared/types/pokedex'
  * Shared across every page via the fixed key, so it is fetched once.
  */
 export function useDex() {
-  const { data, status, error, refresh } = useFetch<DexIndex>('/api/dex', { key: 'dex' })
+  const { data, status, error, refresh } = useFetch<DexIndex>('/api/dex.json', { key: 'dex' })
 
   const pokemon = computed(() => data.value?.pokemon ?? [])
   const generations = computed(() => data.value?.generations ?? [])
