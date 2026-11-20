@@ -1,0 +1,23 @@
+<script setup lang="ts">
+withDefaults(defineProps<{
+  size?: number
+  /** Wobble like a ball mid-capture. */
+  shake?: boolean
+}>(), { size: 32, shake: false })
+</script>
+
+<template>
+  <svg
+    :width="size"
+    :height="size"
+    viewBox="0 0 100 100"
+    aria-hidden="true"
+    :style="shake ? { animation: 'ball-shake 0.9s ease-in-out infinite' } : undefined"
+  >
+    <circle cx="50" cy="50" r="46" fill="#fff" stroke="#12163a" stroke-width="6" />
+    <path d="M4 50a46 46 0 0 1 92 0z" fill="#f2384a" stroke="#12163a" stroke-width="6" stroke-linejoin="round" />
+    <path d="M4 50h92" stroke="#12163a" stroke-width="8" />
+    <circle cx="50" cy="50" r="14" fill="#fff" stroke="#12163a" stroke-width="6" />
+    <circle cx="50" cy="50" r="6" fill="#ffc93c" stroke="#12163a" stroke-width="2" />
+  </svg>
+</template>

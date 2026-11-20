@@ -1,0 +1,12 @@
+{
+  // Nuxt generates the real compiler options in .nuxt/. This root file is what the IDE and
+  // `nuxt typecheck` open; the references give each part of the app its own environment
+  // (Vue app, Nitro server, shared code) with the right auto-imports.
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
+}

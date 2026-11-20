@@ -1,0 +1,12 @@
+{
+  // Tailwind v4 at-rules (@theme, @custom-variant) are valid; stop the built-in CSS linter flagging them.
+  "css.lint.unknownAtRules": "ignore",
+  "files.associations": { "*.css": "tailwindcss" },
+  "editor.quickSuggestions": { "strings": "on" },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "cSpell.words": [
+    "Bokedex", "Pokédex", "Pokémon", "PokeAPI", "matchups", "holo", "nitro", "Nitro", "pinia", "Pinia",
+    "vueuse", "VueUse", "tilt", "jsdelivr", "Bricolage", "Instrument", "Charizard", "Blastoise", "Venusaur",
+    "Eevee", "Gengar", "Dragonite", "Pikachu", "WCAG", "webp"
+  ]
+}
