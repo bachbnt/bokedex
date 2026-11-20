@@ -6,11 +6,15 @@
   "description": "Bokedex — a fast, animated Pokédex and game companion built with Nuxt.",
   "scripts": {
     "dev": "nuxt dev",
+    "predev": "npm run ingest",
     "build": "nuxt build",
     "generate": "nuxt generate",
+    "pregenerate": "npm run ingest",
     "preview": "firebase emulators:start --only hosting",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "ingest": "tsx --tsconfig scripts/tsconfig.json scripts/ingest/index.ts",
     "deploy:firebase": "npm run generate && firebase deploy --only hosting"
   },
@@ -31,6 +35,7 @@
     "@types/node": "^24.19.2",
     "tsx": "^4.23.15",
     "typescript": "^5.8.3",
+    "vitest": "^3.2.7",
     "vue-tsc": "^3.0.4"
   }
 }

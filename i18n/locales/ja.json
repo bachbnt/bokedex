@@ -20,7 +20,9 @@
     "regions": "地方",
     "eggGroups": "タマゴグループ",
     "compare": "比べる",
-    "berries": "きのみ"
+    "berries": "きのみ",
+    "advanced": "詳細検索",
+    "calculator": "計算機"
   },
   "search": {
     "open": "Bokedexを検索",
@@ -509,5 +511,41 @@
     "count": "{count}匹",
     "kicker": "タマゴグループ",
     "seoFallback": "{name}グループに属するポケモン一覧。"
+  },
+  "advanced": {
+    "title": "詳細検索",
+    "description": "タイプ・種族値・とくせい・タマゴグループ・色などでポケモンを検索。",
+    "lead": "条件を組み合わせて目的のポケモンを探し、好きな能力値で並べ替えられます。",
+    "type": "タイプ",
+    "secondType": "もう1つのタイプ",
+    "any": "指定なし",
+    "ability": "とくせい",
+    "kind": "種類",
+    "minimum": "能力値の下限",
+    "statChoice": "能力値",
+    "number": "番号",
+    "pokemon": "ポケモン"
+  },
+  "compare": {
+    "title": "ポケモン比較",
+    "description": "最大4匹の種族値・タイプ・とくせいを並べて比較。",
+    "lead": "最大{max}匹を選んで、能力値を並べて比較できます。各行の最大値を強調表示します。",
+    "add": "ポケモンを追加",
+    "emptyTitle": "比較するポケモンがまだありません",
+    "emptyMessage": "ポケモンを追加すると、能力値・タイプ・とくせいを比較できます。"
+  },
+  "calc": {
+    "title": "能力値計算機",
+    "description": "種族値・レベル・せいかく・個体値・努力値から実数値を計算。",
+    "lead": "バトルでの実際の能力値を計算します。",
+    "choose": "ポケモンを選ぶ",
+    "level": "レベル",
+    "perfectIvs": "個体値を全てV（31）",
+    "zeroIvs": "個体値を全て0",
+    "resetEvs": "努力値をリセット",
+    "stat": "能力",
+    "base": "種族値",
+    "result": "実数値",
+    "evTotal": "努力値の合計：{total} / {max}"
   }
 }

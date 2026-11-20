@@ -33,5 +33,8 @@ export const MORE_NAV: NavItem[] = [
   { to: '/generations', label: 'nav.generations', icon: 'scale' },
   { to: '/regions', label: 'nav.regions', icon: 'globe' },
   { to: '/egg-groups', label: 'nav.eggGroups', icon: 'egg' },
+  { to: '/pokemon', label: 'nav.advanced', icon: 'search' },
+  { to: '/compare', label: 'nav.compare', icon: 'scale' },
+  { to: '/calculator', label: 'nav.calculator', icon: 'bolt' },
   { to: '/play', label: 'nav.play', icon: 'trophy' },
 ]

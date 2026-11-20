@@ -1,36 +1,42 @@
 # Bokedex
 
-A fast, animated Pokédex and game companion. Browse every Pokémon, check type matchups, build a team and play quizzes, all from live data.
+A bilingual Pokémon encyclopedia: every Pokémon with all of its forms, every move, ability, item, berry and place, in **English and Japanese**, plus team, comparison and quiz tools.
 
-**Live site: [bokedex.web.app](https://bokedex.web.app)**
+**Live site: [bokedex.web.app](https://bokedex.web.app)** (English) and [bokedex.web.app/ja](https://bokedex.web.app/ja) (日本語)
 
-Built with **Nuxt 4, Vue 3, Pinia, VueUse and Tailwind CSS 4**. Data comes from the free [PokeAPI](https://pokeapi.co).
+Built with **Nuxt 4, Vue 3, Pinia, VueUse and Tailwind CSS 4**. Data comes from the free [PokeAPI](https://pokeapi.co), processed at build time into about 12,000 static pages.
 
 ![Bokedex home](docs/screenshots/home.webp)
 
-| Detail | Team builder |
+| Pokémon page, Japanese | Pokémon page, with a Mega form |
 | --- | --- |
-| ![Pokémon detail](docs/screenshots/detail.webp) | ![Team builder](docs/screenshots/team.webp) |
+| ![Pokémon page in Japanese](docs/screenshots/pokemon-ja.webp) | ![Mega Charizard X](docs/screenshots/pokemon-mega.webp) |
 
-| Type chart | Quiz |
+## What's inside
+
+| Section | What you can do |
 | --- | --- |
-| ![Type chart](docs/screenshots/types.webp) | ![Who's that Pokémon quiz](docs/screenshots/game-silhouette-reveal.webp) |
+| **Pokédex** `/` | Browse every Pokémon; search by name or number in English, kanji, kana or romaji; filter by type and generation; favorite. |
+| **Pokémon** `/pokemon/25` | Stats and EV yield, type matchups, abilities, evolution with its conditions, **all alternate forms** (Mega, Gigantamax, regional, Primal, Origin...) each on its own page, **moves in every game** (level-up, TM, egg, tutor), **where to find it in every game**, held items, earlier-generation data, breeding and training facts, regional Pokédex numbers, entries for every game, and a gallery of sprites. |
+| **Advanced search** `/pokemon` | Combine type, generation, ability, egg group, color, shape, habitat and a minimum stat; sort by any stat. |
+| **Compare** `/compare` | Up to four Pokémon side by side. |
+| **Stat calculator** `/calculator` | Real stats from base stats, level, nature, IVs and EVs. |
+| **Moves, abilities, items, berries** | Sortable, filterable lists; details with effects, TM numbers, who learns, who holds. |
+| **Types** `/types` | The full chart, a defensive calculator, and a page per type. |
+| **Places** `/locations` | Wild Pokémon for every route, town and cave, per game, with method, level and chance. |
+| **Games, Pokédexes, generations, regions, egg groups, natures** | The reference data around them. |
+| **Team builder** and **quizzes** | Weakness and coverage analysis for a team of six; two quizzes, in either language. |
+| **Search** (`⌘K` / `Ctrl+K`) | One box across everything. |
 
-## Features
+Also: dark mode, a card-to-hero shared-element transition, keyboard shortcuts (`/` to search, arrow keys between Pokémon, `1` to `4` in quizzes), reduced-motion support and a mobile layout.
 
-| Page | What it does |
-| --- | --- |
-| **Pokédex** `/` | Every Pokémon, with search by name or `#number`, type and generation filters, sorting, favorites and infinite scroll. Filters live in the URL, so a search can be shared. |
-| **Detail** `/pokemon/:id` | Animated base stats, type matchups, abilities, profile (catch rate, gender ratio, egg groups), evolution tree with requirements, level-up moves with power, accuracy and PP, shiny toggle and cry audio. |
-| **Type chart** `/types` | The full effectiveness matrix plus a one or two type defensive calculator. |
-| **Team** `/team` | Six slots with shared weaknesses and offensive coverage analysis. |
-| **Play** `/play` | *Who's that Pokémon?* and *Type master*, ten rounds each, with streaks and saved high scores. |
-
-Also: dark mode, a card-to-hero shared-element transition, keyboard shortcuts (`/` to search, arrow keys between Pokémon, `1` to `4` in quizzes), reduced-motion support, and a mobile layout with bottom navigation.
+| Search | Compare | Place |
+| --- | --- | --- |
+| ![Global search](docs/screenshots/search.webp) | ![Compare](docs/screenshots/compare.webp) | ![Location](docs/screenshots/location.webp) |
 
 ## Quick start
 
-Requires **Node 22.19+ or 24.11+**. Nuxt is installed locally by `npm install`; nothing is installed globally.
+Requires **Node 22.19+ or 24.11+** and Git. Nuxt is installed locally by `npm install`; nothing is installed globally.
 
 ```bash
 git clone https://github.com/bachbnt/bokedex.git
@@ -39,87 +45,72 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
+The first run clones PokeAPI's published data (about 600 MB, once) into `.cache/` and builds the datasets in a few seconds. After that `npm run dev` starts straight away.
+
 | Script | Purpose |
 | --- | --- |
-| `npm run dev` | Development server with hot reload |
-| `npm run generate` | Build the static site into `.output/public` |
-| `npm run preview` | Serve the built site at `http://localhost:5002` with the production rewrites (needs the Firebase CLI) |
-| `npm run typecheck` | Type-check the app, server and shared code |
+| `npm run dev` | Development server with hot reload (builds the data first if it is missing or stale) |
+| `npm run generate` | Build the whole static site into `.output/public` (about 75 seconds) |
+| `npm run preview` | Serve the built site at `http://localhost:5002` with the production headers (needs the Firebase CLI) |
+| `npm run ingest` | Build the datasets from PokeAPI. `-- --update` pulls the newest data, `-- --force` rebuilds, `-- --audit` lists untranslated terms |
+| `npm run typecheck` | Type-check the app, server, shared code and scripts |
+| `npm test` | Unit and integration tests |
 
-## Built to grow with PokeAPI
+## How it works
 
-Nothing enumerates Pokémon, types or generations. The Pokédex index and type chart are baked into static JSON at build time from about 30 PokeAPI calls, and a weekly scheduled build refreshes them. When PokeAPI adds a Pokémon, a type or a generation, the next build picks it up, and it shows up in the filters, the type chart, team analysis and the quizzes. Details and moves for each Pokémon are fetched live from PokeAPI in the browser.
+Everything is decided at build time. A pipeline reads PokeAPI's data and writes compact, bilingual datasets; Nuxt prerenders every page from them; the result is plain files on a CDN. There is no server and no runtime dependency on PokeAPI, which is why a Pokémon page opens in about a fifth of a second even on a slow connection.
 
-It is a static site, so it needs no server and hosts for free. See [Architecture](docs/ARCHITECTURE.md) for how it works and the trade-offs.
+The details, including measurements, the data model and how pages stay small, are in [Architecture](docs/ARCHITECTURE.md). The design thinking is in [Design](docs/DESIGN.md).
+
+## Languages
+
+Names come from PokeAPI in both languages and are shown together (the visitor's language first). PokeAPI has no Japanese for move, ability or item effects, so those show in English with a small "EN" badge. Lookup tables PokeAPI never translated use a hand-written Japanese glossary. To add another language, see [Adding a language](docs/ARCHITECTURE.md#adding-a-language).
 
 ## Deploy to Firebase Hosting
 
-The site is live at **[bokedex.web.app](https://bokedex.web.app)** (Firebase project `bokedex`, site `bokedex`). It deploys to Firebase Hosting on the **free Spark plan**; no Cloud Functions or billing needed.
-
-Requirements: the Firebase CLI, signed in to the account that owns the project (`firebase login:use <email>`, or pass `--account <email>`).
+The site is live at **[bokedex.web.app](https://bokedex.web.app)** (Firebase project `bokedex`) on the **free Spark plan**; no Cloud Functions or billing are needed.
 
 ```bash
-npm run generate                                          # build the static site into .output/public
-firebase deploy --only hosting \
-  --project bokedex --account <your-account-email>        # deploy (or: npm run deploy:firebase)
+npm run generate
+firebase deploy --only hosting --project bokedex --account <your-account-email>   # or: npm run deploy:firebase
 ```
 
-To try the built site locally first, run `npm run preview`. It uses the Hosting emulator, so the rewrites in `firebase.json` apply exactly as they do in production.
+To try the built site first, run `npm run preview`.
 
 ### Automatic weekly refresh
 
-`.github/workflows/deploy.yml` typechecks, builds and deploys on every push to `main` and every Monday, so new Pokémon appear without any manual step. Until you add a deploy key it still builds and typechecks, and skips only the deploy.
+`.github/workflows/deploy.yml` typechecks, ingests the newest PokeAPI data, runs the tests, and deploys on every push to `main` and every Monday. A scheduled run does nothing when PokeAPI has not changed. Until you add a deploy key it still builds and tests, and skips only the deploy.
 
 To enable the deploy step:
 
 1. In the Firebase console open **Project settings, Service accounts**, and generate a new private key.
 2. In GitHub open **Settings, Secrets and variables, Actions** and add a repository secret named `FIREBASE_SERVICE_ACCOUNT_BOKEDEX` containing the full JSON.
 
-## Documentation
-
-| Document | Contents |
-| --- | --- |
-| [Architecture](docs/ARCHITECTURE.md) | System diagram, caching, API reference, data flow, state and persistence, conventions, limitations |
-| [Design](docs/DESIGN.md) | Concept, tokens, screens, user flows, motion, accessibility, responsive behavior |
-
 ## Project structure
 
 ```text
-shared/   PokeAPI client, snapshot builder, Pokémon service, shared types
-app/      Vue app: pages, components, composables, stores, utils
-server/   Build-time routes that produce dex.json and types.json
-docs/     Architecture, design and screenshots
+scripts/ingest/   The data pipeline: PokeAPI data in, bilingual datasets out
+shared/           The data model, locale helpers, kana normalization, route list
+app/              Vue app: pages, components, composables, stores, utils
+server/           Build-time routes that serve entities and datasets to the renderer
+i18n/locales/     English and Japanese interface text
+tests/            Unit and integration tests
+docs/             Architecture, design and screenshots
 ```
 
 ## Conventions
 
-- **No relative `../` imports.** Use aliases: `~/` (app), `#shared/` (shared) and `#server/` (server).
-- **No `any`.** PokeAPI payloads are typed in `shared/pokeapi/types.ts`.
-- `npm run typecheck` must pass. The root `tsconfig.json` points at the types Nuxt generates, which is also what makes the IDE resolve auto-imports such as `defineEventHandler`. If your editor shows red squiggles after a fresh clone, run `npm install` (it runs `nuxt prepare`) and restart the TypeScript server.
-
-## Add a mini-game
-
-1. Create a component in `app/components/game/`.
-2. Call `useQuiz({ game, createQuestion })` for rounds, score and streak handling.
-3. Add the key to `GameKey` in `app/stores/scores.ts`.
-4. Register the game in `app/pages/play.vue`.
-
-## Configuration
-
-Override with environment variables at build time (see [Architecture](docs/ARCHITECTURE.md#configuration)):
-
-| Variable | Default |
-| --- | --- |
-| `NUXT_PUBLIC_POKE_API_BASE` | `https://pokeapi.co/api/v2` |
-| `NUXT_PUBLIC_SPRITE_BASE` | jsDelivr mirror of the PokeAPI sprites |
-| `NUXT_PUBLIC_CRY_BASE` | jsDelivr mirror of the PokeAPI cries |
+- **No relative `../` imports.** Use aliases: `~/` (app), `#shared/` (shared), `#server/` (server), `#ingest/` (scripts).
+- **No `any`.** PokeAPI payloads are typed in `scripts/ingest/raw.ts`.
+- `npm run typecheck` and `npm test` must pass. If your editor shows red squiggles after a fresh clone, run `npm install` (it runs `nuxt prepare`) and restart the TypeScript server.
+- Interface text goes in both `i18n/locales/en.json` and `ja.json`; the tests fail if they drift apart.
 
 ## Notes
 
-- New Pokémon appear after the next build (weekly by default), not instantly.
-- `/pokemon/:id` pages render in the browser, so there is no per-Pokémon HTML for search engines or link previews.
-- Moves show the newest game that has level-up data for that Pokémon, which can be a game with a shorter move list.
+- New Pokémon, moves and items appear after the next scheduled build (weekly), not instantly.
+- PokeAPI gaps carry through: no Japanese effect text, no signature Gigantamax moves, and brand-new games are sometimes incomplete.
+- The site is 748 MB on a 10 GB free allowance; Spark's daily transfer allowance (about 360 MB) is the number to watch if traffic grows.
 
 ## Credits
 
-Bokedex is an unofficial fan project. Data and sprites come from [PokeAPI](https://pokeapi.co). Pokémon and all related names belong to Nintendo, Game Freak and The Pokémon Company.
+Bokedex is an unofficial fan project. Data comes from [PokeAPI](https://pokeapi.co); sprites and cries from the community [sprites](https://github.com/PokeAPI/sprites) and [cries](https://github.com/PokeAPI/cries) repositories. Pokémon and all related names belong to Nintendo, Game Freak and The Pokémon Company.

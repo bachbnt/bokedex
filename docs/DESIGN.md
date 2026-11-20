@@ -1,21 +1,23 @@
 # Design
 
-The thinking behind how Bokedex looks, moves and flows.
+The thinking behind how Bokedex looks, moves, reads in two languages, and flows.
 
 ## Concept
 
-**A holo-card binder.** Every Pokémon is a collectible card that tilts under the pointer and carries its own type colors. The card is also the navigation: click it and its artwork morphs into the hero of the detail page. That one moment is where the design spends its boldness. Everything around it stays calm so the Pokémon remain the loudest thing on screen.
+**A holo-card binder that grew into an encyclopedia.** Every Pokémon is a collectible card that tilts under the pointer and carries its own type colors. The card is also the navigation: click it and its artwork morphs into the hero of the detail page. That one moment is where the design spends its boldness. Everything around it (moves, items, places, tables) stays calm, dense and readable, so the Pokémon remain the loudest thing on screen.
 
-Audience: Pokémon fans and players who want to look something up quickly, plan a team, or check a matchup mid-game.
+Audience: Pokémon fans and players, in English or Japanese, who want to look something up quickly, plan a team, or check a matchup mid-game.
 
-Primary job: get from "what was that Pokémon?" to the answer in two clicks, then keep the reference data (types, moves, evolutions) one tap away.
+Primary job: get from "what was that?" to the answer in a click or two, from anywhere, and keep the next question (who learns it, where is it, what does it evolve into) one tap away.
 
 ## Principles
 
 1. **Color comes from the subject.** The UI chrome is neutral; the accent on any card or detail page is the Pokémon's own type colors, so the interface feels different for Charizard and Blastoise without extra decoration.
 2. **One memorable motion.** The tilt and the card-to-hero morph carry the personality. Other motion answers an action (bars filling, answers revealing) rather than decorating idle screens.
-3. **Reference data stays scannable.** Numbers use tabular figures, tables align, and risks use red and green consistently (weakness, resistance).
-4. **Plain words.** Sentence case, active verbs, no filler. Empty and error states say what happened and what to do.
+3. **Reference data stays scannable.** Numbers use tabular figures, tables align and sort, and risk uses red and green consistently (weakness, resistance).
+4. **Everything links to everything.** A move links to its learners, a learner to its moves, an item to who holds it, a place to what lives there. The encyclopedia is the connections.
+5. **Two languages, one layout.** The visitor's language is primary, the other is a quiet second line, and nothing shifts when the language changes (see "Reading in two languages").
+6. **Plain words.** Sentence case, active verbs, no filler. Empty and error states say what happened and what to do.
 
 ## Design tokens
 
@@ -41,6 +43,7 @@ Type colors are defined in `app/utils/types.ts`. Text on a type color is chosen 
 | --- | --- | --- |
 | Display and numerals | Bricolage Grotesque (500, 700, 800) | Characterful and compact; the dex numbers and names carry the personality |
 | Body and UI | Instrument Sans (400 to 600) | Quiet and legible at small sizes |
+| Japanese | Noto Sans JP (400, 500, 700) | The Latin faces have no Japanese glyphs; naming one avoids mismatched system fallbacks |
 
 Headlines use tight tracking (`-0.02em`) and a line height of 1.1; body text stays under about 70 characters per line.
 
@@ -50,12 +53,18 @@ Large radii (20 to 36px) on panels and cards, pill shapes for chips and badges. 
 
 ## Screens
 
-| Screen | Purpose | Light | Dark or mobile |
+| Screen | Purpose | English | Japanese or variant |
 | --- | --- | --- | --- |
-| Pokédex (`/`) | Find any Pokémon: search, filter, sort, favorite | ![Home](screenshots/home.webp) | ![Home, dark](screenshots/home-dark.webp) |
-| Detail (`/pokemon/:id`) | Everything about one Pokémon | ![Detail](screenshots/detail.webp) | ![Detail, dark](screenshots/detail-dark.webp) |
+| Pokédex (`/`) | Find any Pokémon: search, filter, sort, favorite | ![Home](screenshots/home.webp) | ![Home in Japanese](screenshots/home-ja.webp) |
+| Pokémon (`/pokemon/6`) | Everything about one Pokémon, form by form | ![Pokémon](screenshots/pokemon.webp) | ![Pokémon in Japanese](screenshots/pokemon-ja.webp) |
+| A form (`/pokemon/6/mega-x`) | The form's own types, stats and abilities | ![Mega form](screenshots/pokemon-mega.webp) | ![Dark theme](screenshots/pokemon-dark.webp) |
+| Search (`⌘K`) | One box across Pokémon, moves, abilities, items, places | ![Search](screenshots/search.webp) | |
+| Moves (`/moves`) | Sort and filter every move | ![Moves](screenshots/moves.webp) | ![Move detail](screenshots/move-detail.webp) |
+| Item (`/items/master-ball`) | Effect, price, TMs and holders | ![Item](screenshots/item.webp) | |
+| Place (`/locations/kanto-route-1`) | Wild Pokémon per game | ![Place](screenshots/location.webp) | |
+| Compare (`/compare`) | Stats side by side, best highlighted | ![Compare](screenshots/compare.webp) | ![Calculator](screenshots/calculator.webp) |
 | Type chart (`/types`) | Look up and calculate matchups | ![Types](screenshots/types.webp) | |
-| Team (`/team`) | Build six and find the holes | ![Team](screenshots/team.webp) | ![Team, mobile](screenshots/mobile-team.webp) |
+| Team (`/team`) | Build six and find the holes | ![Team](screenshots/team.webp) | |
 | Play (`/play`) | Two quick quizzes | ![Who's that Pokémon](screenshots/game-silhouette-reveal.webp) | ![Type master](screenshots/game-type-master.webp) |
 
 ### Key components
@@ -71,34 +80,43 @@ Large radii (20 to 36px) on panels and cards, pill shapes for chips and badges. 
 ```mermaid
 flowchart TD
   Start([Open Bokedex]) --> Home["Pokédex<br/>search · filter · sort"]
-  Home -->|click a card| Detail["Pokémon detail"]
-  Home -->|Build a team| Team
-  Home -->|Play a quiz| Play
-  Detail -->|evolution link or arrow keys| Detail
+  Start --> Search["Global search (⌘K)"]
+  Search --> Detail
+  Search --> Entity
+  Home -->|click a card| Detail["Pokémon page"]
+  Detail -->|form pills| Form["A form's page"]
+  Detail -->|move, ability, item, place links| Entity["Move · ability · item · place"]
+  Entity -->|learners, holders, residents| Detail
   Detail -->|Add to team| Team["Team builder"]
-  Detail -->|Favorite| Home
-  Team -->|Add Pokémon| Picker["Search dialog"] --> Team
-  Team -->|read the holes| Detail
-  Nav([Top bar or bottom bar]) --> Types["Type chart"]
-  Nav --> Home
-  Nav --> Team
-  Nav --> Play["Play"]
+  Detail -->|evolution link or arrow keys| Detail
+  Home --> Tools["Advanced search · compare · calculator"]
+  Tools --> Detail
+  Nav([Header or bottom bar]) --> More["Reference: types, natures, games, Pokédexes, generations, regions, egg groups"]
+  Nav --> Play["Quizzes"]
 ```
 
-### Find a Pokémon
+### Find anything
 
 ```mermaid
 flowchart LR
-  A["Type a name or #number<br/>(press / to focus)"] --> B["Results update instantly"]
-  C["Pick a type chip"] --> B
-  D["Choose a generation"] --> B
-  B --> E{Any matches?}
-  E -->|yes| F["Card grid, 48 at a time"]
-  E -->|no| G["Empty state: change search or clear filters"]
-  F -->|click| H["Detail page"]
+  A["Open search<br/>(⌘K or the search button)"] --> B["Type in English, kanji, kana or romaji"]
+  B --> C["Results grouped by what they are,<br/>filterable by category"]
+  C -->|arrow keys and Enter, or click| D["The page"]
 ```
 
-Filters are written to the URL, so a filtered view can be copied and shared.
+### Explore one Pokémon
+
+```mermaid
+flowchart TD
+  A["Hero: names in both languages, types, flavor text"] --> B["Forms: switch to Mega, Gigantamax, regional..."]
+  B --> C["Stats, EV yield, matchups, abilities, profile"]
+  C --> D["Evolution with its conditions"]
+  D --> E["Moves: pick a game and a method"]
+  E --> F["Where to find: pick a game"]
+  F --> G["Held items, earlier generations, entries, gallery"]
+```
+
+The moves and the where-to-find sections load when they scroll into view, so the page opens immediately.
 
 ### Build and check a team
 
@@ -108,8 +126,8 @@ flowchart TD
   B -->|no| A
   B -->|yes or partial| C["Analysis updates live"]
   C --> D["Defensive holes<br/>types that hit more members than they resist"]
-  C --> E["Offensive coverage<br/>types the team hits super effectively"]
-  C --> F["Weakness breakdown<br/>weak / resist counts per type"]
+  C --> E["Offensive coverage"]
+  C --> F["Weakness breakdown"]
   D --> G["Swap a member and re-check"]
 ```
 
@@ -117,16 +135,26 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A["Choose a game tab"] --> B["Start<br/>(Who's that Pokémon? can pick a generation)"]
+  A["Choose a game tab"] --> B["Start"]
   B --> C["Round n of 10"]
   C --> D["Answer by click or keys 1 to 4"]
   D --> E["Reveal: right or wrong, with the answer"]
   E --> F{Last round?}
   F -->|no| G["Next (Enter)"] --> C
   F -->|yes| H["Result: score, best, longest streak"]
-  H -->|new best| I["Saved locally"]
   H --> J["Play again"] --> B
 ```
+
+Answers are shown in the visitor's language, so the Japanese quiz is a Japanese-name quiz.
+
+## Reading in two languages
+
+- **Names appear as a pair.** The visitor's language is the large line; the other is a smaller line beneath ("ピカチュウ" over "Pikachu", and the reverse). Lists show the second name small beside the first.
+- **Layout does not depend on language.** Labels are short in both, and lists and tables are built to take longer Japanese or English strings.
+- **Honest fallback.** When only English exists (most effect text), it is shown in English with a small "EN" badge and a tooltip, never silently swapped or hidden.
+- **Search ignores script.** Hiragana, katakana, romaji and English find the same thing.
+- **Numbers read like the games.** Japanese names use ordinary digits and letters (`10まんボルト`).
+- **Switching keeps your place.** The language switch links to the same page in the other language.
 
 ## Motion
 
@@ -144,25 +172,27 @@ All motion respects `prefers-reduced-motion`: animations and transitions collaps
 
 ## Accessibility
 
-- Visible focus ring on every interactive element (3px, with offset). Hover lift and focus rings were scanned across every page at desktop and mobile widths to confirm scroll containers never clip them.
-- Buttons that toggle state use `aria-pressed`; meters and progress use `role="meter"` and `role="progressbar"`.
+- Visible focus ring on every interactive element (3px, with offset). Hover lift and focus rings were scanned across pages at desktop and mobile widths to confirm scroll containers never clip them.
+- Buttons that toggle state use `aria-pressed`; sort headers expose `aria-sort`; meters and progress use `role="meter"` and `role="progressbar"`.
 - Text on type colors is contrast-checked by luminance; type is never conveyed by color alone (every badge carries its name).
+- The page language is set per route (`lang="ja-JP"`), and text that falls back to English is marked `lang="en"` so screen readers pronounce it correctly.
 - Skip link to main content; `aria-live` regions announce result counts and quiz feedback.
-- Keyboard: `/` focuses search, left and right arrows move between Pokémon on the detail page, `1` to `4` answer quizzes, `Enter` continues, `Esc` closes the picker.
-- Native `<dialog>` for the Pokémon picker gives focus trapping and Escape handling for free.
+- Keyboard: `⌘K` or `Ctrl+K` opens search (arrows and Enter pick a result), `/` focuses the Pokédex search, left and right arrows move between Pokémon, `1` to `4` answer quizzes, `Enter` continues, `Esc` closes dialogs.
+- Native `<dialog>` for search and the Pokémon picker gives focus trapping and Escape handling for free.
 
 ## Responsive behavior
 
 | Width | Behavior |
 | --- | --- |
-| Under 768px | Bottom pill navigation instead of the top links; type chips scroll horizontally; wide tables and the type matrix scroll inside their panel |
+| Under 1024px | Bottom pill navigation (Pokédex, moves, items, team, search, more) instead of the header links; the "More" sheet holds every other section |
+| 1024px and up | Header navigation with a "More" menu; the detail page lays stats, matchups, profile and abilities out in two columns |
 | Card grid | 2 columns, 3 from 640px, 4 from 1024px, 5 from 1280px |
-| 1024px and up | The detail page lays stats, matchups, profile and abilities out in two columns |
+| Tables and the type matrix | Scroll inside their own panel instead of scrolling the page |
 
-| Pokédex | Detail | Team |
+| Pokédex | Pokémon | Team (Japanese) |
 | --- | --- | --- |
-| ![Home on mobile](screenshots/mobile-home.webp) | ![Detail on mobile](screenshots/mobile-detail.webp) | ![Team on mobile](screenshots/mobile-team.webp) |
+| ![Home on mobile](screenshots/mobile-home.webp) | ![Pokémon on mobile](screenshots/mobile-pokemon.webp) | ![Team on mobile](screenshots/mobile-team.webp) |
 
 ## Voice
 
-Sentence case, plain verbs, and one name per action ("Add to team" becomes "On your team"). Errors say what failed and what to do next ("The data service didn't respond. Check your connection and try again.") and never apologize. Empty screens invite the next step ("Add a Pokémon to see weaknesses and coverage").
+Sentence case, plain verbs, and one name per action ("Add to team" becomes "On your team"). Errors say what failed and what to do next and never apologize. Empty screens invite the next step ("Add a Pokémon to see weaknesses and coverage"). Japanese copy uses the games' own terms (わざ, とくせい, どうぐ) rather than literal translations.

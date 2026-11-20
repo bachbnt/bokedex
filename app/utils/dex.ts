@@ -1,4 +1,6 @@
 import type { DexEntry, Locale } from '#shared/types/encyclopedia'
+import { normalizeSearch } from '#shared/utils/kana'
+import { pickName } from '#shared/utils/locales'
 
 export type SortKey = 'id-asc' | 'id-desc' | 'name'
 

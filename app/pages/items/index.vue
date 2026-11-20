@@ -5,10 +5,10 @@ const PAGE_SIZE = 100
 
 const { t } = useI18n()
 const { name, altName, locale } = useL10n()
-const labels = useLabels()
+const { taxonomy, refs } = useTaxonomyRefs()
+const labels = useLabels(refs)
 const sprites = useSprites()
 const { data, status } = useDataset<ItemRow[]>('items')
-const taxonomy = useTaxonomyRefs()
 
 useSeoMeta({ title: () => `${t('items.listTitle')} | Bokedex`, description: () => t('items.listDescription') })
 

@@ -1,23 +1,15 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
+import { STATIC_ROUTES, withLanguages } from './shared/utils/routes'
 
 const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL ?? 'https://bokedex.web.app'
-
-/** Pages that are not one-per-entity. Each exists in every language. */
-const STATIC_ROUTES = [
-  '/', '/types', '/team', '/play', '/moves', '/abilities', '/natures', '/items', '/berries',
-  '/locations', '/games', '/pokedex', '/generations', '/regions', '/egg-groups',
-]
 
 /** Entity pages (`/pokemon/25`, `/moves/thunderbolt`...) written by `npm run ingest`. */
 function entityRoutes(): string[] {
   const file = fileURLToPath(new URL('./data/generated/routes.json', import.meta.url))
   return existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as string[]) : []
 }
-
-/** The site is prerendered in every language, so each route is listed with its `/ja` twin. */
-const withLanguages = (routes: string[]) => routes.flatMap(route => [route, route === '/' ? '/ja' : `/ja${route}`])
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -83,7 +75,7 @@ export default defineNuxtConfig({
       crawlLinks: false,
       failOnError: true,
       concurrency: 8,
-      routes: withLanguages([...STATIC_ROUTES, ...entityRoutes()]),
+      routes: [...STATIC_ROUTES, ...entityRoutes()].flatMap(withLanguages),
     },
   },
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const { name, altName } = useL10n()
-const labels = useLabels()
+const { refs } = useTaxonomyRefs()
+const labels = useLabels(refs)
 const { reference, status } = useReference()
-useTaxonomyRefs()
 
 useSeoMeta({ title: () => `${t('generations.title')} | Bokedex`, description: () => t('generations.description') })
 </script>

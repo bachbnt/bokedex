@@ -31,10 +31,13 @@ export function useL10n() {
   }
 }
 
-/** Names of the things a page mentions: types, Pokémon, moves, categories... Falls back to the slug. */
-export function useLabels() {
+/**
+ * Names of the things a page mentions: types, Pokémon, moves, categories... Falls back to the slug.
+ * Reads the `refs` provided above the component; a page that provides its own passes them in.
+ */
+export function useLabels(own?: Ref<Refs>) {
   const { name } = useL10n()
-  const refs = useRefs()
+  const refs = own ?? useRefs()
   const core = useState<CoreData | null>('core', () => null)
 
   return {

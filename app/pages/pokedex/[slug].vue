@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const labels = useLabels()
 const { name } = useL10n()
-const { entity: pokedex } = await useEntity('pokedexes', () => String(route.params.slug))
+const { entity: pokedex, refs } = await useEntity('pokedexes', () => String(route.params.slug))
+const labels = useLabels(refs)
 
 const title = computed(() => labels.taxonomy('pokedex', pokedex.value.slug) || name(pokedex.value.names))
 useSeoMeta({ title: () => `${title.value} | Bokedex`, description: () => t('pokedexes.seoFallback', { name: title.value }) })

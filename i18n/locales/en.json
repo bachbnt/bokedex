@@ -20,7 +20,9 @@
     "regions": "Regions",
     "eggGroups": "Egg groups",
     "compare": "Compare",
-    "berries": "Berries"
+    "berries": "Berries",
+    "advanced": "Advanced search",
+    "calculator": "Calculator"
   },
   "search": {
     "open": "Search Bokedex",
@@ -509,5 +511,41 @@
     "count": "{count} Pokémon",
     "kicker": "Egg group",
     "seoFallback": "{name} egg group: every Pokémon that belongs to it."
+  },
+  "advanced": {
+    "title": "Advanced search",
+    "description": "Find Pokémon by type, stats, ability, egg group, color and more.",
+    "lead": "Combine filters to find exactly the Pokémon you need, and sort by any stat.",
+    "type": "Type",
+    "secondType": "Also type",
+    "any": "Any",
+    "ability": "Ability",
+    "kind": "Kind",
+    "minimum": "Minimum stat",
+    "statChoice": "Stat",
+    "number": "No.",
+    "pokemon": "Pokémon"
+  },
+  "compare": {
+    "title": "Compare Pokémon",
+    "description": "Compare base stats, types and abilities of up to four Pokémon side by side.",
+    "lead": "Pick up to {max} Pokémon and see their stats side by side. The best value in each row is highlighted.",
+    "add": "Add Pokémon",
+    "emptyTitle": "Nothing to compare yet",
+    "emptyMessage": "Add a few Pokémon to compare their stats, types and abilities."
+  },
+  "calc": {
+    "title": "Stat calculator",
+    "description": "Work out a Pokémon's real stats from its base stats, level, nature, IVs and EVs.",
+    "lead": "See the stats a Pokémon will actually have in battle.",
+    "choose": "Choose a Pokémon",
+    "level": "Level",
+    "perfectIvs": "Perfect IVs (31)",
+    "zeroIvs": "Zero IVs",
+    "resetEvs": "Reset EVs",
+    "stat": "Stat",
+    "base": "Base",
+    "result": "Result",
+    "evTotal": "EVs used: {total} of {max}"
   }
 }

@@ -1,6 +1,6 @@
 # Architecture
 
-How Bokedex is put together, how it stays current as PokeAPI grows, and the conventions the code follows.
+How Bokedex turns PokeAPI into a bilingual encyclopedia of about 12,000 static pages, why it stays fast and free to host, and the conventions the code follows.
 
 Bokedex is a **static site**. Nothing runs on a server while people use it, so it hosts for free on Firebase Hosting's Spark plan.
 
@@ -8,210 +8,188 @@ Bokedex is a **static site**. Nothing runs on a server while people use it, so i
 
 ```mermaid
 flowchart LR
-  subgraph Build["Build time: npm run generate"]
-    Snap["buildDexSnapshot()<br/>about 30 PokeAPI calls"]
-    Files["dex.json · types.json<br/>prerendered /, /types, /team, /play"]
-    Snap --> Files
+  subgraph Build["Build time"]
+    Src[("PokeAPI/api-data<br/>cached git clone")]
+    Ingest["npm run ingest<br/>normalize, translate, index"]
+    Gen[("data/generated<br/>one JSON per entity")]
+    Pub[("public/data<br/>lists and per-Pokémon files")]
+    Nuxt["nuxt generate<br/>prerender every page"]
+    Src --> Ingest --> Gen
+    Ingest --> Pub
+    Gen --> Nuxt
+    Pub --> Nuxt
   end
 
   subgraph Host["Firebase Hosting (static CDN)"]
-    Static[("HTML · JS · JSON<br/>200.html SPA fallback")]
+    Pages[("HTML + payload per page<br/>about 24,000 files")]
+    Data[("/data/*.json")]
   end
 
   subgraph Browser["Browser (Vue 3 + Nuxt)"]
-    Pages["Pages"]
-    Composables["useDex · useTypeChart<br/>usePokemonService"]
-    Stores["Pinia stores"]
-    LS[("localStorage")]
-    Pages --> Composables
-    Pages --> Stores
-    Stores <--> LS
+    App["Prerendered page, then hydrated"]
+    State[("localStorage<br/>favorites, team, scores")]
+    App <--> State
   end
 
-  PokeAPI[("PokeAPI")]
-  CDN[("Sprites and cries<br/>jsDelivr")]
-
-  PokeAPI --> Snap
-  Files --> Static
-  Static -->|dex and type chart| Composables
-  Composables -->|details, moves| PokeAPI
-  Pages -.->|artwork, cries by dex id| CDN
+  Nuxt --> Pages
+  Pub --> Data
+  Pages --> App
+  Data -.->|lists, search index, learnsets, encounters| App
 ```
 
-Two data paths, chosen by how often the data changes and how much of it there is:
+Two ideas carry the design:
 
-| Data | Source | Why |
+1. **All data work happens at build time.** The browser never calls PokeAPI. A pipeline turns raw PokeAPI data into compact, bilingual datasets, and Nuxt prerenders every page from them.
+2. **A page carries only what it mentions.** A Pokémon page does not embed the whole Pokédex to show three evolutions; the server attaches just the rows it references.
+
+## The data pipeline (`scripts/ingest`)
+
+`npm run ingest` reads [PokeAPI/api-data](https://github.com/PokeAPI/api-data), the published JSON of the whole API, from a shallow clone cached in `.cache/api-data`. Reading a local copy is deterministic, takes seconds, and puts no load on the PokeAPI servers (the same data over HTTP would be about 15,000 requests).
+
+| Step | What it produces |
+| --- | --- |
+| Species and forms | One entry per species with every alternate form (Mega, Gigantamax, regional, Primal, Origin...) carrying its own types, stats, abilities, EV yield, held items and past-generation data |
+| Evolutions | A structured tree (the conditions are data, rendered per language in the UI) |
+| Learnsets and encounters | One small file per Pokémon form, loaded on demand |
+| Moves, abilities, items, berries | Full entries plus compact list rows, with TM numbers, "learned by" and "held by" links |
+| Types, natures, generations, games, Pokédexes, egg groups, growth rates | Reference data and the type chart |
+| Locations and regions | Wild Pokémon per area, merged across games that share the same method, levels and chance |
+| Taxonomy | Lookup tables (categories, habitats, targets...) merged with a hand-written Japanese glossary |
+| Search index | One row per searchable thing, in every language |
+| Sitemap and robots | Every page in every language with hreflang alternates |
+
+The run is skipped when the source commit has not changed; `--update` pulls the newest PokeAPI data and `--force` rebuilds regardless. The whole build takes about five seconds.
+
+Outputs are split by who reads them:
+
+| Location | Contents | Published? |
 | --- | --- | --- |
-| The Pokédex index (id, name, types, generation) and the type chart | **Baked into static JSON at build time** | Needed on every page, small (about 60 KB), and only changes when Pokémon are added |
-| One Pokémon's details and moves | **Fetched from PokeAPI by the browser** when you open it | There are too many to prerender (a thousand details, tens of thousands of moves), and PokeAPI allows browser requests (`access-control-allow-origin: *`) |
+| `data/generated/entities/<kind>/<key>.json` | One JSON per entity, read while prerendering | No |
+| `public/data/*.json` | Lists (dex, moves, items...), taxonomy, search index | Yes |
+| `public/data/learnsets/<id>.json`, `encounters/<id>.json` | Per-Pokémon files, fetched when that section scrolls into view | Yes |
 
-## Keeping up with new Pokémon
+### The data model
 
-Nothing in the code lists Pokémon, types or generations. The snapshot is rebuilt from the API, so growth upstream flows through on the next build.
+[`shared/types/encyclopedia.ts`](../shared/types/encyclopedia.ts) is the single contract between the pipeline and the app. Every translatable value carries all shipped languages:
 
-```mermaid
-flowchart LR
-  A["PokeAPI adds Pokémon"] --> B["Scheduled build<br/>(weekly, or on demand)"]
-  B --> C["buildDexSnapshot()<br/>species + types + generations"]
-  C --> D["New dex.json and types.json"]
-  D --> E["Deploy to Hosting"]
-  E --> F["Grid, filters, chart, team tool<br/>and quizzes include the new Pokémon"]
+```ts
+interface Names { en: string; ja?: string; jaKana?: string; jaRoma?: string }
+interface Text  { en?: string; ja?: string }
 ```
 
-| Concern | How it is handled |
+The UI picks one at render time (`useL10n`) and falls back to English when a translation does not exist upstream. Text that fell back is marked with a small "EN" badge so a reader always knows what language they are reading.
+
+## Rendering: every page is prerendered
+
+| Pages | How |
 | --- | --- |
-| More Pokémon | The species list is read at build time. Each type endpoint already lists its members, so types come for free with no per-Pokémon request. Cost is about 30 calls whether there are 1,000 or 2,000 Pokémon. |
-| New types and generations | Filters, the chart, calculator, team analysis and quizzes are built from the snapshot. An unknown type gets a stable color derived from its name (`app/utils/types.ts`). |
-| Between rebuilds | A Pokémon that is not in the snapshot yet is not listed, but opening `/pokemon/<id>` directly still works because details come live from PokeAPI. |
-| Missing artwork | URLs are built from the dex id; the card falls back to the pixel sprite on error. |
-| Half-published Pokémon | Species with no types yet are hidden until upstream finishes them. |
-| Refresh cadence | `.github/workflows/deploy.yml` rebuilds and deploys weekly and on every push to `main`. You can also run it by hand from the Actions tab. |
-| Self-hosting the data | Point `pokeApiBase` and `spriteBase` at a mirror (see Configuration). |
+| About 6,000 entities per language (Pokémon and forms, moves, abilities, items, places, types, generations, games, Pokédexes, regions, egg groups) | One prerendered HTML file and one payload file each, written to `/pokemon/25`, `/ja/moves/thunderbolt`, ... |
+| List and tool pages (Pokédex, moves, items, advanced search, compare, calculator...) | Prerendered shell that loads its list from `/data/*.json` |
+| Unknown URLs | A real `404.html` with a 404 status |
 
-## Loading a Pokémon
+Measured on the current data: **24,344 routes prerender in about 75 seconds**, producing 26,700 files and 748 MB. A typical Pokémon page costs about 10 KB of gzipped HTML plus 11 KB of payload; the heaviest pages (the national Pokédex, and moves hundreds of Pokémon learn) are about 100 KB.
 
-```mermaid
-sequenceDiagram
-  participant U as Visitor
-  participant H as Firebase Hosting
-  participant B as Browser app
-  participant P as PokeAPI
+### Entity payloads and `refs`
 
-  U->>H: GET /pokemon/25
-  H-->>B: 200.html (app shell, no per-Pokémon file exists)
-  B->>B: router matches /pokemon/:id, client-rendered
-  B->>P: pokemon/25, then species and evolution chain
-  B->>P: abilities (shared by many Pokémon, remembered)
-  P-->>B: JSON (PokeAPI caches responses for 24h)
-  B-->>U: stats, matchups, evolutions, profile
-  B->>P: up to 40 moves (after first paint)
-  P-->>B: moves
-  B-->>U: moves table
-```
+An entity page is built from `GET /api/entity/<kind>/<key>`, a server route used only while prerendering and in `nuxt dev`. It returns the entity plus `refs`: the small rows of everything the entity mentions (the Pokémon in an evolution line, the abilities of a form, the labels for its egg groups). `useEntity` hands `refs` to every component below the page, and `useLabels` turns slugs into names.
 
-`usePokemonService` keeps a lookup cache for the page session, and PokeAPI sends `cache-control: max-age=86400`, so revisiting a Pokémon is instant.
+Without `refs`, each of the 12,000 pages would embed whole datasets (the Pokédex is 150 KB) and the site would be over a gigabyte larger.
 
-## Data layer
+Two details matter:
 
-All aggregation lives in [`shared/pokeapi/`](../shared/pokeapi) as plain TypeScript on top of the standard `fetch`, so the same code runs in Node at build time and in the browser.
+- Type names (18 of them, about 1 KB) appear on almost every page, so they ship once per page as global core data instead of through `refs`.
+- Each table in `refs.taxonomy` keeps the source table's order, which is chronological for games, so pages can sort versions without loading another dataset.
 
-| File | Responsibility |
-| --- | --- |
-| `client.ts` | Fetch with timeout and retry (404s are not retried), concurrency cap, helpers |
-| `types.ts` | Shapes of the PokeAPI responses we read; only the fields we use are declared |
-| `dex.ts` | `buildDexSnapshot`: index and type chart from about 30 calls |
-| `pokemon.ts` | `createPokemonService`: details and moves with per-session caching |
+### Datasets and the dev server
 
-Response shapes the UI consumes live in [`shared/types/pokedex.ts`](../shared/types/pokedex.ts). A change there breaks the build on both sides at once.
+List pages need the whole table, so they load `/data/<name>.json`. While rendering (prerender or `nuxt dev`) the server cannot always fetch its own static files (the dev server, not Nitro, serves `public/`, which once caused a render loop), so on the server `datasetUrl()` points at `/api/data/<name>` instead. The browser always reads the static file.
 
-The only server code is the build-time snapshot: `server/api/dex.json.get.ts` and `server/api/types.json.get.ts` are prerendered into `/api/dex.json` and `/api/types.json`. During `nuxt dev` the same routes run live, cached for an hour.
+Sections that load on demand (learnsets, encounters) are `client-only` and `hydrate-on-visible`, so a table is never baked into thousands of pages.
+
+## Internationalization
+
+- `@nuxtjs/i18n` with `en` at the root and `ja` under `/ja`; every route exists in both and links to its twin through `hreflang`.
+- UI text lives in `i18n/locales/{en,ja}.json`. `tests/integration/i18n.test.ts` fails if the two files differ in keys, if code uses a key that is not defined, or if a long Japanese string is just a copy of the English one.
+- **Names** come from PokeAPI in both languages. Pages show the visitor's language first and the other as a smaller second line.
+- **Descriptions**: PokeAPI has Japanese flavor text for some games, but no Japanese for move, ability or item effects. Those fall back to English with the badge.
+- **Lookup tables** PokeAPI never translated (habitats, shapes, item categories, move targets, encounter methods, Pokédexes...) are filled from `scripts/ingest/glossary.ts`, written by hand using the games' own terms. Anything still missing falls back to English; `npm run ingest -- --audit` lists what remains.
+- **Search** normalizes everything to one form (width-folded, lowercase, katakana, no spaces or punctuation), so "ピカ", "ぴか", "Pikachu" and "pika" all match.
+- Full-width letters and digits in Japanese names (`１０まんボルト`) are written as normal ones (`10まんボルト`), as the games show them; Japanese punctuation is kept.
+
+### Adding a language
+
+`Names` and `Text` currently name their languages explicitly, so a third language is a small, mechanical change rather than a configuration entry:
+
+1. Add the code to `LOCALES` and `LANGUAGE_PREFIXES` (`shared/utils/locales.ts`, `shared/utils/routes.ts`) and to the `i18n` block in `nuxt.config.ts`.
+2. Add the field to `Names` and `Text`, read it in `scripts/ingest/l10n.ts`, and teach `pickName`/`pickText` about it.
+3. Copy `i18n/locales/en.json` to the new language and translate it (the test lists anything missing).
+4. Extend `scripts/ingest/glossary.ts` for the terms PokeAPI lacks.
+
+### Adding a kind of page
+
+Add its builder under `scripts/ingest/build/`, write its entities in `scripts/ingest/index.ts`, add the type to `EntityByKind`, list what it mentions in `server/utils/refs.ts`, and create the page under `app/pages/`. The route list and sitemap come from the pipeline, and the build fails if any page cannot render.
 
 ## Frontend structure
 
 ```text
 app/
-  pages/          index · pokemon/[id] · types · team · play
-  components/     PokemonCard (holo tilt) · StatBars · EvolutionTree · TypeChartMatrix
-                  FilterBar · PokemonPicker · MoveTable · game/*
-  composables/    useDex · useDexFilters · useTypeChart · useTeamAnalysis · usePokemonService
-                  useQuiz · useTilt · useCry · useSprites
+  pages/          one folder per section: pokemon, moves, abilities, items, berries, locations, types,
+                  natures, games, pokedex, generations, regions, egg-groups, compare, calculator, team, play
+  components/     PokemonPage (and its sections), SearchDialog, FilterBar, EntityHeader, PokemonGrid, quiz/*
+  composables/    useEntity, useDataset, useL10n, useUrlState, useDex, useTypeChart, useSearchIndex, useQuiz...
   stores/         collection (favorites, team) · scores (quiz records)
-  utils/          dex filtering and sorting · type colors · stat metadata · nav
+  utils/          dex filtering, type colors, stat formula, navigation
 server/
-  api/            dex.json · types.json (prerendered at build)
-  utils/          snapshot (cached builder used by the routes)
-shared/
-  pokeapi/        client · raw types · snapshot builder · Pokémon service
-  types/          contracts shared by server and app
-  utils/          titleCase · padDexId
+  api/            entity/[kind]/[key], data/[name]   (build-time and dev only)
+  utils/          store (reads the generated data), refs (what each entity references)
+shared/           the data model, locale helpers, kana normalization, route list
+scripts/ingest/   the pipeline
+tests/            unit and integration tests
 ```
 
-### Rendering strategy
+### Filters in the URL
 
-| Route | Rendering | Notes |
-| --- | --- | --- |
-| `/`, `/types`, `/team`, `/play` | Prerendered at build | First paint already contains the grid (48 cards in the HTML); Vue then hydrates |
-| `/pokemon/:id` | Client-rendered (`routeRules: { ssr: false }`) | Served by the `200.html` fallback via the Hosting rewrite |
-| Anything else | `200.html`, then the app's own 404 page | |
-
-### Data flow in the app
-
-```mermaid
-flowchart TD
-  A["useDex()<br/>/api/dex.json, key 'dex'"] --> B["useDexFilters()<br/>filterDex() in the browser"]
-  B --> C["Home grid"]
-  A --> D["Team picker"]
-  A --> E["Quiz question pools"]
-  F["useTypeChart()<br/>/api/types.json, key 'types'"] --> G["Type chart matrix"]
-  F --> H["Defense calculator"]
-  F --> I["useTeamAnalysis()"]
-  F --> J["Type master quiz"]
-  K["usePokemonService().detail"] --> L["Detail page"]
-  M["usePokemonService().moves<br/>client only, after first paint"] --> L
-```
-
-- **Filtering is client-side.** The index is small enough that search, type, generation, sort and favorites run instantly with no request. Rendering is chunked (48 cards at a time, loaded by an `IntersectionObserver`), so thousands of Pokémon stay smooth.
-- **Filters live in the URL** (`?q=&type=&gen=&sort=&fav=`) so a view can be shared. See "Prerendered pages and the URL" below.
-- **Type effectiveness** is computed from damage relations by `useTypeChart`; there is no hardcoded chart to keep in sync.
+List pages keep their state in the URL through `useUrlState`, so a view can be shared. On a prerendered page Nuxt hydrates with the query string stripped (to match the static HTML) and applies the real query right afterwards, so the URL is followed with a watcher rather than read once. The hook also recognises the echo of its own URL updates, so quick typing is never overwritten.
 
 ### State and persistence
 
-Favorites, the team and quiz scores live in Pinia setup stores backed by VueUse `useLocalStorage`. Two details are easy to get wrong:
+Favorites, the team and quiz scores live in Pinia setup stores backed by VueUse `useLocalStorage`. `initOnMounted` makes the prerendered HTML and the first client render agree (both empty). Each persisted ref goes through `skipHydrate(...)`: without it Pinia assigns the build-time empty state during hydration, VueUse writes that back, and the saved data is wiped on every full page load.
 
-1. `initOnMounted: true` makes the prerendered HTML and the first client render agree (both empty), then loads the saved value after mount. This avoids hydration mismatches.
-2. Each persisted ref is returned through `skipHydrate(...)`. Without it, Pinia assigns the build-time empty state to the ref during hydration, VueUse writes that back to `localStorage`, and the saved team or favorites are wiped on every full page load.
+## Testing
 
-### Prerendered pages and the URL
+| Layer | What | Command |
+| --- | --- | --- |
+| Types | App, server, shared code and scripts, through the root `tsconfig.json` | `npm run typecheck` |
+| Unit | Search and filtering, kana, localized text, stat formula, ingest helpers, sitemap | `npm test` |
+| Integration | Translation parity and usage; the generated data (every route has an entity, types and learnsets resolve, key tables are translated) | `npm test` |
 
-On a prerendered page, Nuxt hydrates with the query string stripped so the first render matches the static HTML, then applies the real query. Reading `route.query` once during setup therefore misses it, and a shared link like `/?type=fire` would lose its filter. `useDexFilters` and the `/play` page follow the URL with a watcher instead, and ignore the echo of their own URL updates so quick typing is never overwritten.
-
-### Games
-
-Both quizzes use `useQuiz`, which owns rounds, score, streak and the best-score record. A game supplies only how to create a question and whether an answer is right. To add a game, follow the steps in the [README](../README.md#add-a-mini-game).
-
-## Conventions
-
-- **No `../` imports.** Use aliases:
-
-  | Alias | Points to | Use in |
-  | --- | --- | --- |
-  | `~/` | `app/` | app code |
-  | `#shared/` | `shared/` | server and app |
-  | `#server/` | `server/` | server code (declared in `nuxt.config.ts`) |
-
-  Framework functions (`defineEventHandler`, `useFetch`, `ref`, ...) and app composables, components and stores are auto-imported by Nuxt.
-- **No `any`.** Upstream payloads are typed; unknown shapes are narrowed rather than cast.
-- **Typecheck everything:** `npm run typecheck` checks the Vue app, the Nitro server and shared code through the root `tsconfig.json` (project references into `.nuxt/`). This is the same configuration the IDE uses.
-- **Accessibility is not optional:** visible focus, `aria-pressed` on toggles, reduced-motion support, keyboard paths for the quizzes.
+Pages are also checked in a real browser against the production build (see "Deployment").
 
 ## Deployment
 
-`npm run generate` writes the site to `.output/public`; `firebase.json` serves it with these rules:
+`npm run generate` ingests (if the source changed) and writes the site to `.output/public`. `firebase.json` serves it with cleanUrls and these headers:
 
 | Rule | Effect |
 | --- | --- |
-| `cleanUrls` | `/types` serves `types/index.html` |
-| Rewrite `**` to `/200.html` | Any path without a file (such as `/pokemon/25`) loads the app shell |
 | `/_nuxt/**` immutable, 1 year | Hashed build assets are cached forever |
-| `/api/*.json`, 1 hour | The snapshot refreshes within an hour of a deploy |
+| `/data/**`, 1 hour | Lists, learnsets and the manifest refresh within an hour of a deploy |
+| Images, fonts, 1 day | |
 
-## Configuration
+`.github/workflows/deploy.yml` typechecks, ingests the newest PokeAPI data, tests, and deploys on every push to `main` and every Monday. A scheduled run compares the live site's `manifest.json` with the new one and does nothing if PokeAPI has not changed.
 
-Set in `nuxt.config.ts` under `runtimeConfig.public`; override with environment variables at build time.
+## Conventions
 
-| Setting | Env variable | Default |
-| --- | --- | --- |
-| `pokeApiBase` | `NUXT_PUBLIC_POKE_API_BASE` | `https://pokeapi.co/api/v2` |
-| `spriteBase` | `NUXT_PUBLIC_SPRITE_BASE` | jsDelivr mirror of the PokeAPI sprites repo |
-| `cryBase` | `NUXT_PUBLIC_CRY_BASE` | jsDelivr mirror of the PokeAPI cries repo |
+- **No `../` imports.** Use aliases: `~/` (app), `#shared/` (shared), `#server/` (server), `#ingest/` (scripts).
+- **No `any`.** PokeAPI payloads are typed in `scripts/ingest/raw.ts`, declaring only the fields we read.
+- `npm run typecheck` and `npm test` must pass; the root `tsconfig.json` references the types Nuxt generates, which is also what makes the IDE resolve auto-imports.
+- **Accessibility is not optional:** visible focus, `aria-pressed` on toggles, `aria-live` result counts, reduced-motion support, keyboard paths for search and the quizzes.
 
 ## Trade-offs and limitations
 
-Choosing a static site buys free hosting and no server to run. In return:
+Choosing a static site buys free hosting, speed and no server to run. In return:
 
-- **New Pokémon wait for a rebuild.** They appear in the grid after the next deploy (weekly by default), not instantly.
-- **Detail pages are not server-rendered.** There is no per-Pokémon HTML for search engines or social link previews. The home page is prerendered, but `/pokemon/:id` is an app shell until the browser loads the data.
-- **No server cache or stale fallback for details.** Each visitor's browser calls PokeAPI, relying on its 24 hour HTTP cache. If PokeAPI is down, a Pokémon that visitor has not opened yet fails with a retry prompt.
-- **Moves show one game.** Each Pokémon shows the newest game that has level-up data, which can be a game with a shorter move list (for example Legends Z-A).
-- **Load on PokeAPI scales with visitors.** Traffic goes straight to a free community API; if Bokedex grows large, mirror PokeAPI and set `pokeApiBase`.
-- **No automated tests yet.** Typechecking and a browser check cover the project today. The pure logic (`filterDex`, `matchesQuery`, `useTypeChart`, `describeCondition`) is the best place to start.
+- **New Pokémon wait for a rebuild.** They appear after the next scheduled run (weekly), not instantly.
+- **PokeAPI gaps carry through.** There is no Japanese for effect text, no signature G-Max moves, and brand-new games are sometimes incomplete. Missing translations fall back to English and are labelled.
+- **Free-tier headroom.** The site is 748 MB of 10 GB, but Spark's daily transfer allowance is about 360 MB; a crawler fetching thousands of pages in one day could use a good share. If traffic grows, put a free CDN in front or move to Blaze.
+- **Build memory.** Prerendering peaks around 2.2 GB, fine for CI runners.
+- **Fan project.** Names, artwork and cries belong to their owners; artwork is loaded from the community sprite repository, not redistributed.

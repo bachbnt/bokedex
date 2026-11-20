@@ -3,10 +3,10 @@ import type { EncounterGroup } from '#shared/types/encyclopedia'
 
 const { t } = useI18n()
 const route = useRoute()
-const labels = useLabels()
 const sprites = useSprites()
 const { name, altName } = useL10n()
 const { entity: location, refs } = await useEntity('locations', () => String(route.params.slug))
+const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${name(location.value.names)} | Bokedex`, description: () => t('locations.seoFallback', { name: name(location.value.names) }) })
 

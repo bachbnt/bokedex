@@ -1,8 +1,8 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const labels = useLabels()
-const { entity: generation } = await useEntity('generations', () => String(route.params.id))
+const { entity: generation, refs } = await useEntity('generations', () => String(route.params.id))
+const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${t('pokemon.generationN', { n: generation.value.id })} | Bokedex`, description: () => t('generations.seoFallback', { n: generation.value.id }) })
 </script>

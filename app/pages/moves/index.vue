@@ -5,11 +5,11 @@ const PAGE_SIZE = 100
 
 const { t } = useI18n()
 const { name, altName, locale } = useL10n()
-const labels = useLabels()
+const { refs } = useTaxonomyRefs()
+const labels = useLabels(refs)
 const { data, status } = useDataset<MoveRow[]>('moves')
 const { reference } = useReference()
 const { types } = useTypeChart()
-useTaxonomyRefs()
 
 useSeoMeta({ title: () => `${t('moves.listTitle')} | Bokedex`, description: () => t('moves.listDescription') })
 

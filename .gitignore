@@ -18,4 +18,6 @@ dist
 .cache/
 data/generated/
 public/data/
+public/sitemap.xml
+public/robots.txt
 *.tsbuildinfo

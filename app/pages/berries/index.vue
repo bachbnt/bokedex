@@ -3,10 +3,10 @@ import type { BerryRow } from '#shared/types/encyclopedia'
 
 const { t } = useI18n()
 const { name, altName, locale } = useL10n()
-const labels = useLabels()
+const { refs } = useTaxonomyRefs()
+const labels = useLabels(refs)
 const sprites = useSprites()
 const { data, status } = useDataset<BerryRow[]>('berries')
-useTaxonomyRefs()
 
 useSeoMeta({ title: () => `${t('berries.title')} | Bokedex`, description: () => t('berries.description') })
 

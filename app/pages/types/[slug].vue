@@ -1,11 +1,10 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const labels = useLabels()
 const { name, altName } = useL10n()
-const refs = useRefs()
 const core = useCoreData()
-const { entity: type } = await useEntity('types', () => String(route.params.slug))
+const { entity: type, refs } = await useEntity('types', () => String(route.params.slug))
+const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${labels.type(type.value.slug)} | Bokedex`, description: () => t('types.detailDescription', { name: labels.type(type.value.slug) }) })
 

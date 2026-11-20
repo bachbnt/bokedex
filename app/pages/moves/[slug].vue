@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const labels = useLabels()
 const { name, locale } = useL10n()
 const { entity: move, refs } = await useEntity('moves', () => String(route.params.slug))
+const labels = useLabels(refs)
 
 useSeoMeta({
   title: () => `${name(move.value.names)} | Bokedex`,

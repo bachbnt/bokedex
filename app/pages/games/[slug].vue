@@ -1,10 +1,9 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const labels = useLabels()
 const { name } = useL10n()
-const refs = useRefs()
-const { entity: game } = await useEntity('games', () => String(route.params.slug))
+const { entity: game, refs } = await useEntity('games', () => String(route.params.slug))
+const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${name(game.value.names)} | Bokedex`, description: () => t('games.seoFallback', { name: name(game.value.names) }) })
 

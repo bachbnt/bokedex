@@ -13,19 +13,22 @@ import { buildMoves, readMachines } from '#ingest/build/moves'
 import { buildPokemon } from '#ingest/build/pokemon'
 import { buildEggGroups, buildGames, buildGenerations, buildGrowthRates, buildNatures, buildPokedexes, buildTypes } from '#ingest/build/reference'
 import { buildSearchIndex } from '#ingest/build/search'
+import { buildRobots, buildSitemap } from '#ingest/build/seo'
 import { buildTaxonomy, missingJapanese } from '#ingest/build/taxonomy'
 import { buildAreaRefs, buildWorld } from '#ingest/build/world'
-import { GENERATED_DIR, PUBLIC_DIR, resetOutputs, writeJson } from '#ingest/out'
+import { GENERATED_DIR, PUBLIC_DIR, PUBLIC_ROOT, resetOutputs, writeJson, writeText } from '#ingest/out'
 import { ensureSource } from '#ingest/source'
 
 /** Bump when the shape of the generated data changes, so stale output is never reused. */
-const SCHEMA = 1
+const SCHEMA = 2
+
+const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL ?? 'https://bokedex.web.app'
 
 const args = new Set(process.argv.slice(2))
 
 function isUpToDate(sourceCommit: string): boolean {
   const manifestPath = join(GENERATED_DIR, 'manifest.json')
-  if (args.has('--force') || !existsSync(manifestPath) || !existsSync(join(PUBLIC_DIR, 'manifest.json'))) return false
+  if (args.has('--force') || !existsSync(manifestPath) || !existsSync(join(PUBLIC_DIR, 'manifest.json')) || !existsSync(join(PUBLIC_ROOT, 'sitemap.xml'))) return false
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as DataManifest
   return manifest.schema === SCHEMA && manifest.sourceCommit === sourceCommit
 }
@@ -133,6 +136,8 @@ function main(): void {
     ...eggGroups.map(group => `/egg-groups/${group.slug}`),
   ]
   writeJson(GENERATED_DIR, 'routes.json', routes)
+  writeText(PUBLIC_ROOT, 'sitemap.xml', buildSitemap(SITE_URL, routes))
+  writeText(PUBLIC_ROOT, 'robots.txt', buildRobots(SITE_URL))
 
   const manifest: DataManifest = {
     schema: SCHEMA,

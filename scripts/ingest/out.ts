@@ -13,6 +13,15 @@ export function writeJson(root: string, relativePath: string, data: unknown): vo
   writeFileSync(target, JSON.stringify(data))
 }
 
+/** Files served from the site root (sitemap, robots). */
+export const PUBLIC_ROOT = join(process.cwd(), 'public')
+
+export function writeText(root: string, relativePath: string, text: string): void {
+  const target = join(root, relativePath)
+  mkdirSync(dirname(target), { recursive: true })
+  writeFileSync(target, text)
+}
+
 export function resetOutputs(): void {
   rmSync(GENERATED_DIR, { recursive: true, force: true })
   rmSync(PUBLIC_DIR, { recursive: true, force: true })

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const labels = useLabels()
 const sprites = useSprites()
 const { name, locale } = useL10n()
-const { entity: item } = await useEntity('items', () => String(route.params.slug))
+const { entity: item, refs } = await useEntity('items', () => String(route.params.slug))
+const labels = useLabels(refs)
 
 useSeoMeta({
   title: () => `${name(item.value.names)} | Bokedex`,
