@@ -33,6 +33,16 @@ function isUpToDate(sourceCommit: string): boolean {
   return manifest.schema === SCHEMA && manifest.sourceCommit === sourceCommit
 }
 
+/**
+ * The page list lives in code (`shared/utils/routes.ts`), not in PokeAPI's data, so the sitemap is rewritten
+ * even when the data is current: a new page must reach the sitemap without forcing a full rebuild.
+ */
+function refreshSeoFiles(): void {
+  const routes = JSON.parse(readFileSync(join(GENERATED_DIR, 'routes.json'), 'utf8')) as string[]
+  writeText(PUBLIC_ROOT, 'sitemap.xml', buildSitemap(SITE_URL, routes))
+  writeText(PUBLIC_ROOT, 'robots.txt', buildRobots(SITE_URL))
+}
+
 function step<T>(label: string, run: () => T): T {
   const started = performance.now()
   const result = run()
@@ -43,6 +53,7 @@ function step<T>(label: string, run: () => T): T {
 function main(): void {
   const sourceCommit = ensureSource(args.has('--update'))
   if (isUpToDate(sourceCommit)) {
+    refreshSeoFiles()
     console.log(`Data is up to date (PokeAPI ${sourceCommit.slice(0, 7)}). Use --force to rebuild.`)
     return
   }

@@ -1,6 +1,6 @@
 import { skipHydrate } from 'pinia'
 
-export type GameKey = 'silhouette' | 'typeMaster'
+export type GameKey = 'silhouette' | 'typeMaster' | 'statDuel' | 'nameMatch' | 'abilityGuess'
 
 interface GameRecord {
   best: number
@@ -11,7 +11,13 @@ interface GameRecord {
 export const useScoresStore = defineStore('scores', () => {
   const records = useLocalStorage<Record<GameKey, GameRecord>>(
     'bokedex:scores',
-    { silhouette: { best: 0, played: 0 }, typeMaster: { best: 0, played: 0 } },
+    {
+      silhouette: { best: 0, played: 0 },
+      typeMaster: { best: 0, played: 0 },
+      statDuel: { best: 0, played: 0 },
+      nameMatch: { best: 0, played: 0 },
+      abilityGuess: { best: 0, played: 0 },
+    },
     { initOnMounted: true, mergeDefaults: true },
   )
 

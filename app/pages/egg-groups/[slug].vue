@@ -1,10 +1,14 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const { name } = useL10n()
+const { name, altName } = useL10n()
 const { entity: group } = await useEntity('egg-groups', () => String(route.params.slug))
 
 useSeoMeta({ title: () => `${name(group.value.names)} | Bokedex`, description: () => t('eggGroups.seoFallback', { name: name(group.value.names) }) })
+useEntitySchema('eggGroups', {
+  name: () => name(group.value.names),
+  alternateName: () => altName(group.value.names),
+})
 </script>
 
 <template>

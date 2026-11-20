@@ -64,8 +64,10 @@ Large radii (20 to 36px) on panels and cards, pill shapes for chips and badges. 
 | Place (`/locations/kanto-route-1`) | Wild Pokémon per game | ![Place](screenshots/location.webp) | |
 | Compare (`/compare`) | Stats side by side, best highlighted | ![Compare](screenshots/compare.webp) | ![Calculator](screenshots/calculator.webp) |
 | Type chart (`/types`) | Look up and calculate matchups | ![Types](screenshots/types.webp) | |
-| Team (`/team`) | Build six and find the holes | ![Team](screenshots/team.webp) | |
-| Play (`/play`) | Two quick quizzes | ![Who's that Pokémon](screenshots/game-silhouette-reveal.webp) | ![Type master](screenshots/game-type-master.webp) |
+| Team (`/team`) | Build six with Tera types and EVs, see real stats and the holes | ![Team](screenshots/team.webp) | ![Edit build](screenshots/team-build.webp) |
+| Z-Moves and Max Moves (`/battle-moves`) | Each type's moves and the power conversion | ![Z-Moves and Max Moves](screenshots/battle-moves.webp) | ![On a move page](screenshots/move-battle.webp) |
+| Play (`/play`) | Five quick quizzes | ![Who's that Pokémon](screenshots/game-silhouette-reveal.webp) | ![Type master](screenshots/game-type-master.webp) |
+| More quizzes | Stat duel, and name match in Japanese | ![Stat duel](screenshots/game-stat-duel.webp) | ![Name match](screenshots/game-name-match-ja.webp) |
 
 ### Key components
 
@@ -93,6 +95,7 @@ flowchart TD
   Tools --> Detail
   Nav([Header or bottom bar]) --> More["Reference: types, natures, games, Pokédexes, generations, regions, egg groups"]
   Nav --> Play["Quizzes"]
+  Entity -->|Z-Move and Max Move| Battle["Z-Moves and Max Moves"]
 ```
 
 ### Find anything
@@ -124,7 +127,8 @@ The moves and the where-to-find sections load when they scroll into view, so the
 flowchart TD
   A["Add Pokémon<br/>(dialog, or Random team)"] --> B{Six slots full?}
   B -->|no| A
-  B -->|yes or partial| C["Analysis updates live"]
+  B -->|yes or partial| E2["Edit a member: Tera type, nature,<br/>ability, level, IVs, EVs"]
+  E2 --> C["Stats and analysis update live"]
   C --> D["Defensive holes<br/>types that hit more members than they resist"]
   C --> E["Offensive coverage"]
   C --> F["Weakness breakdown"]
@@ -132,6 +136,8 @@ flowchart TD
 ```
 
 ### Play a quiz
+
+Five games share one flow: silhouettes, the type chart, stat duels, name match (the name in the other language, pick the matching one) and ability check.
 
 ```mermaid
 flowchart TD
@@ -145,7 +151,7 @@ flowchart TD
   H --> J["Play again"] --> B
 ```
 
-Answers are shown in the visitor's language, so the Japanese quiz is a Japanese-name quiz.
+Answers are shown in the visitor's language, so the Japanese quiz is a Japanese-name quiz; name match asks for the other language on purpose.
 
 ## Reading in two languages
 

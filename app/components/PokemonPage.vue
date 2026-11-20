@@ -51,6 +51,12 @@ useSeoMeta({
   description: () => latestFlavor.value?.[locale.value] ?? latestFlavor.value?.en ?? t('seo.pokemonFallback', { name: displayName.value }),
   ogImage: () => sprites.artwork(form.value?.pokemonId ?? id.value),
 })
+useEntitySchema('pokemon', {
+  name: () => displayName.value,
+  alternateName: () => alternateName.value,
+  description: () => latestFlavor.value?.[locale.value] ?? latestFlavor.value?.en,
+  image: () => sprites.artwork(form.value?.pokemonId ?? id.value),
+})
 
 onKeyStroke('ArrowLeft', () => neighbors.value.prev && navigateTo(localePath(`/pokemon/${neighbors.value.prev.id}`)))
 onKeyStroke('ArrowRight', () => neighbors.value.next && navigateTo(localePath(`/pokemon/${neighbors.value.next.id}`)))

@@ -36,5 +36,6 @@ export const MORE_NAV: NavItem[] = [
   { to: '/pokemon', label: 'nav.advanced', icon: 'search' },
   { to: '/compare', label: 'nav.compare', icon: 'scale' },
   { to: '/calculator', label: 'nav.calculator', icon: 'bolt' },
+  { to: '/battle-moves', label: 'nav.battleMoves', icon: 'sparkle' },
   { to: '/play', label: 'nav.play', icon: 'trophy' },
 ]

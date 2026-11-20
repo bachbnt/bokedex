@@ -1,13 +1,18 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const { name, locale } = useL10n()
+const { name, altName, locale } = useL10n()
 const { entity: move, refs } = await useEntity('moves', () => String(route.params.slug))
 const labels = useLabels(refs)
 
 useSeoMeta({
   title: () => `${name(move.value.names)} | Bokedex`,
   description: () => move.value.effect[locale.value] ?? move.value.effect.en ?? t('moves.seoFallback', { name: name(move.value.names) }),
+})
+useEntitySchema('moves', {
+  name: () => name(move.value.names),
+  alternateName: () => altName(move.value.names),
+  description: () => move.value.effect[locale.value] ?? move.value.effect.en,
 })
 
 const facts = computed(() => {
@@ -21,6 +26,9 @@ const facts = computed(() => {
     { label: t('moves.generation'), value: t('pokemon.generationN', { n: value.generation }) },
   ]
 })
+
+/** What a damaging move turns into as a Z-Move and as a Max Move. */
+const battle = computed(() => battleMovesOf(move.value))
 
 /** Side effects in plain words, only the ones that apply. */
 const meta = computed(() => {
@@ -76,6 +84,21 @@ const meta = computed(() => {
         </dl>
       </section>
     </div>
+
+    <section v-if="battle" class="panel p-6" aria-labelledby="battle-heading">
+      <h2 id="battle-heading" class="text-2xl font-bold">{{ t('moves.sections.battle') }}</h2>
+      <p class="mb-4 mt-1 text-sm text-muted">{{ t('moves.battleHint') }}</p>
+      <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+        <div v-for="entry in [{ key: 'z', label: t('battle.zMove'), data: battle.z }, { key: 'max', label: t('battle.maxMove'), data: battle.max }]" :key="entry.key">
+          <dt class="text-sm text-muted">{{ entry.label }}</dt>
+          <dd class="font-semibold">
+            <NuxtLinkLocale :to="`/moves/${entry.data.slug}`" class="underline decoration-line decoration-2 underline-offset-4">{{ labels.move(entry.data.slug) }}</NuxtLinkLocale>
+            <span class="ml-2 text-muted">{{ t('battle.powerN', { power: entry.data.power }) }}</span>
+          </dd>
+        </div>
+      </dl>
+      <NuxtLinkLocale to="/battle-moves" class="mt-4 inline-block text-sm font-semibold underline decoration-line decoration-2 underline-offset-4">{{ t('battle.seeAll') }}</NuxtLinkLocale>
+    </section>
 
     <section v-if="move.machines.length" class="panel p-6">
       <h2 class="mb-4 text-2xl font-bold">{{ t('moves.sections.machines') }}</h2>

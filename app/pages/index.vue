@@ -8,6 +8,7 @@ const { reference } = useReference()
 const { types } = useTypeChart()
 const { query, type, gen, sort, onlyFavorites, filtered } = useDexFilters()
 
+useSiteSchema()
 useSeoMeta({
   title: () => t('seo.homeTitle'),
   description: () => t('seo.homeDescription'),

@@ -7,6 +7,9 @@ const { entity: type, refs } = await useEntity('types', () => String(route.param
 const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${labels.type(type.value.slug)} | Bokedex`, description: () => t('types.detailDescription', { name: labels.type(type.value.slug) }) })
+useEntitySchema('types', {
+  name: () => labels.type(type.value.slug),
+})
 
 const offence = computed(() => [
   { label: t('types.offence.double'), tone: 'text-good', value: 2, list: type.value.relations.doubleTo },

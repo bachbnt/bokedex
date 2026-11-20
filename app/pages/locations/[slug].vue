@@ -9,6 +9,10 @@ const { entity: location, refs } = await useEntity('locations', () => String(rou
 const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${name(location.value.names)} | Bokedex`, description: () => t('locations.seoFallback', { name: name(location.value.names) }) })
+useEntitySchema('locations', {
+  name: () => name(location.value.names),
+  alternateName: () => altName(location.value.names),
+})
 
 // Games in release order: the page's version labels arrive in that order.
 const versionOrder = computed(() => new Map(Object.keys(refs.value.taxonomy.version ?? {}).map((slug, index) => [slug, index])))

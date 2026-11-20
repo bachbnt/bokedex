@@ -1,12 +1,17 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const { name, locale } = useL10n()
+const { name, altName, locale } = useL10n()
 const { entity: ability } = await useEntity('abilities', () => String(route.params.slug))
 
 useSeoMeta({
   title: () => `${name(ability.value.names)} | Bokedex`,
   description: () => ability.value.shortEffect[locale.value] ?? ability.value.shortEffect.en ?? t('abilities.seoFallback', { name: name(ability.value.names) }),
+})
+useEntitySchema('abilities', {
+  name: () => name(ability.value.names),
+  alternateName: () => altName(ability.value.names),
+  description: () => ability.value.shortEffect[locale.value] ?? ability.value.shortEffect.en,
 })
 
 const notes = computed(() => Object.fromEntries(ability.value.pokemon.filter(entry => entry.hidden).map(entry => [entry.id, t('pokemon.hiddenAbility')])))

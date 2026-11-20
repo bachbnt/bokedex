@@ -6,6 +6,10 @@ const { entity: region, refs } = await useEntity('regions', () => String(route.p
 const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${name(region.value.names)} | Bokedex`, description: () => t('regions.seoFallback', { name: name(region.value.names) }) })
+useEntitySchema('regions', {
+  name: () => name(region.value.names),
+  alternateName: () => altName(region.value.names),
+})
 
 const locations = computed(() => region.value.locations.flatMap(slug => (refs.value.locations[slug] ? [refs.value.locations[slug]] : []))
   .toSorted((a, b) => name(a.names).localeCompare(name(b.names))))

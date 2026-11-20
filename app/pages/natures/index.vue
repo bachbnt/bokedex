@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import type { Taxonomy } from '#shared/types/encyclopedia'
-
 const { t } = useI18n()
 const { name, locale } = useL10n()
 const { reference, status } = useReference()
-const { data: taxonomy } = useDataset<Taxonomy>('taxonomy')
-provideRefs(computed(() => ({ ...EMPTY_REFS, taxonomy: taxonomy.value ?? {} })))
-const labels = useLabels()
+const { refs } = useTaxonomyRefs()
+const labels = useLabels(refs)
 const route = useRoute()
 
 useSeoMeta({ title: () => `${t('natures.title')} | Bokedex`, description: () => t('natures.description') })

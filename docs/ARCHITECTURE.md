@@ -56,7 +56,7 @@ Two ideas carry the design:
 | Locations and regions | Wild Pokémon per area, merged across games that share the same method, levels and chance |
 | Taxonomy | Lookup tables (categories, habitats, targets...) merged with a hand-written Japanese glossary |
 | Search index | One row per searchable thing, in every language |
-| Sitemap and robots | Every page in every language with hreflang alternates |
+| Sitemap and robots | Every page in every language with hreflang alternates. Rewritten on every run, even when the data is current, because the page list lives in code |
 
 The run is skipped when the source commit has not changed; `--update` pulls the newest PokeAPI data and `--force` rebuilds regardless. The whole build takes about five seconds.
 
@@ -97,6 +97,8 @@ Without `refs`, each of the 12,000 pages would embed whole datasets (the Pokéde
 
 Two details matter:
 
+- A component cannot inject what it provides itself, so the page that calls `useEntity` (or `useTaxonomyRefs` on a list page) passes the returned `refs` to its own labels: `useLabels(refs)`. Components below it just call `useLabels()`.
+
 - Type names (18 of them, about 1 KB) appear on almost every page, so they ship once per page as global core data instead of through `refs`.
 - Each table in `refs.taxonomy` keeps the source table's order, which is chronological for games, so pages can sort versions without loading another dataset.
 
@@ -124,6 +126,14 @@ Sections that load on demand (learnsets, encounters) are `client-only` and `hydr
 2. Add the field to `Names` and `Text`, read it in `scripts/ingest/l10n.ts`, and teach `pickName`/`pickText` about it.
 3. Copy `i18n/locales/en.json` to the new language and translate it (the test lists anything missing).
 4. Extend `scripts/ingest/glossary.ts` for the terms PokeAPI lacks.
+
+### Structured data
+
+Each entity page adds schema.org JSON-LD through `useEntitySchema`: a `WebPage` about the thing (both-language name, image, description) with a `BreadcrumbList` (Bokedex, section, page); the home page adds a `WebSite` with a search box. The builders are plain functions in `shared/utils/jsonld.ts`, and the serializer escapes `<` so a name can never close the script tag.
+
+### Z-Moves and Max Moves
+
+PokeAPI has these moves with names in both languages, but not the rule that turns a regular move into one of them. `shared/utils/battle-moves.ts` holds the one hand-written part, the power conversion tables, and picks the moves by type and damage class. Names come from the move data, and the server adds the two converted moves to a move's `refs`, so a move page carries them without loading the move list. Signature Gigantamax moves are not in PokeAPI and are not shown.
 
 ### Adding a kind of page
 
@@ -153,14 +163,14 @@ List pages keep their state in the URL through `useUrlState`, so a view can be s
 
 ### State and persistence
 
-Favorites, the team and quiz scores live in Pinia setup stores backed by VueUse `useLocalStorage`. `initOnMounted` makes the prerendered HTML and the first client render agree (both empty). Each persisted ref goes through `skipHydrate(...)`: without it Pinia assigns the build-time empty state during hydration, VueUse writes that back, and the saved data is wiped on every full page load.
+Favorites, the team, each member's build (Tera type, nature, ability, level, IVs, EVs) and quiz scores live in Pinia setup stores backed by VueUse `useLocalStorage`. `initOnMounted` makes the prerendered HTML and the first client render agree (both empty). Builds are stored in their own key, keyed by Pokémon id, so a team saved before builds existed still loads, and `normalizeBuild` repairs any saved or hand-edited build (clamps levels, IVs and EVs, enforces 252 per stat and 510 in total). Each persisted ref goes through `skipHydrate(...)`: without it Pinia assigns the build-time empty state during hydration, VueUse writes that back, and the saved data is wiped on every full page load.
 
 ## Testing
 
 | Layer | What | Command |
 | --- | --- | --- |
 | Types | App, server, shared code and scripts, through the root `tsconfig.json` | `npm run typecheck` |
-| Unit | Search and filtering, kana, localized text, stat formula, ingest helpers, sitemap | `npm test` |
+| Unit | Search and filtering, kana, localized text, stat formula, team builds, quiz questions, Z/Max conversion, JSON-LD, ingest helpers, sitemap | `npm test` |
 | Integration | Translation parity and usage; the generated data (every route has an entity, types and learnsets resolve, key tables are translated) | `npm test` |
 
 Pages are also checked in a real browser against the production build (see "Deployment").

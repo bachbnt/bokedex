@@ -22,7 +22,8 @@
     "compare": "Compare",
     "berries": "Berries",
     "advanced": "Advanced search",
-    "calculator": "Calculator"
+    "calculator": "Calculator",
+    "battleMoves": "Z-Moves and Max Moves"
   },
   "search": {
     "open": "Search Bokedex",
@@ -269,9 +270,11 @@
       "effects": "Side effects",
       "machines": "TM and HM numbers",
       "learnedBy": "Learned by {count} Pokémon",
-      "descriptions": "Descriptions by game"
+      "descriptions": "Descriptions by game",
+      "battle": "Z-Move and Max Move"
     },
-    "noLearners": "No Pokémon learn this move."
+    "noLearners": "No Pokémon learn this move.",
+    "battleHint": "What this move becomes in the games that have these mechanics."
   },
   "encounters": {
     "none": "No wild encounters are recorded for this Pokémon.",
@@ -317,8 +320,8 @@
   },
   "team": {
     "title": "Team builder",
-    "description": "Build a team of six and see its shared weaknesses and type coverage.",
-    "lead": "Pick up to six Pokémon. Bokedex shows which attack types threaten the team and which types it can hit hard.",
+    "description": "Build a team of six with Tera types, natures and EVs, and see its shared weaknesses, type coverage and real stats.",
+    "lead": "Pick up to six Pokémon and set their Tera type, nature and EVs. Bokedex shows which attack types threaten the team and which types it can hit hard.",
     "random": "Random team",
     "clear": "Clear team",
     "yourTeam": "Your team",
@@ -335,12 +338,30 @@
     "breakdown": "Weakness breakdown",
     "breakdownHint": "Each tile shows team members weak to the type, then those that resist it.",
     "emptyTitle": "Your team is empty",
-    "emptyMessage": "Add a Pokémon to see weaknesses and coverage, or start from a random team."
+    "emptyMessage": "Add a Pokémon to see weaknesses and coverage, or start from a random team.",
+    "statsTitle": "Team stats",
+    "statsHint": "Real stats at each member's level, nature, IVs and EVs. Edit a member to change them. The best value in each column is highlighted.",
+    "statsPokemon": "Pokémon",
+    "build": {
+      "title": "Edit build",
+      "edit": "Edit build",
+      "save": "Save",
+      "reset": "Reset",
+      "tera": "Tera type",
+      "noTera": "None",
+      "teraHint": "A Terastallized Pokémon takes damage as its Tera type only, and keeps its original types for the same-type bonus on its own moves.",
+      "teraShort": "Tera",
+      "noNature": "No nature",
+      "ability": "Ability",
+      "noAbility": "Not chosen",
+      "stats": "Stats, IVs and EVs",
+      "level": "Lv. {level}"
+    }
   },
   "play": {
     "title": "Play",
-    "description": "Two quick Pokémon quizzes: name the silhouette and master the type chart.",
-    "lead": "Quick rounds built from live Pokédex data. New Pokémon join the quiz as soon as they appear in the Pokédex.",
+    "description": "Five quick Pokémon quizzes: silhouettes, the type chart, base stats, names in two languages and abilities.",
+    "lead": "Quick rounds built from the live Pokédex data. New Pokémon join the quizzes as soon as they appear in it.",
     "choose": "Choose a game",
     "silhouette": "Who's that Pokémon?",
     "typeMaster": "Type master",
@@ -380,7 +401,19 @@
     },
     "correctShort": "Correct.",
     "wrongShort": "Not quite.",
-    "multiplierResult": "{type} does {multiplier}× here."
+    "multiplierResult": "{type} does {multiplier}× here.",
+    "statDuel": "Stat duel",
+    "statDuelIntro": "Two Pokémon, one stat. Pick the one with the higher base value. Ten rounds that build a feel for who is fast, tough or strong.",
+    "statDuelPrompt": "Which Pokémon has the higher base",
+    "nameMatch": "Name match",
+    "nameMatchIntro": "See a Pokémon's name in the other language and pick the matching one. A good way to learn the Japanese names, or the English ones.",
+    "nameMatchPrompt": "Which Pokémon is called",
+    "abilityGuess": "Ability check",
+    "abilityGuessIntro": "An ability appears. Which of four Pokémon can have it? Ten rounds that connect Pokémon to what they do in battle.",
+    "abilityGuessPrompt": "Which Pokémon can have the ability",
+    "abilityGuessAnswer": "{name} can have {ability}.",
+    "statDuelResult": "{a} {av}, {b} {bv}.",
+    "nameMatchResult": "{alt} is {name}."
   },
   "abilities": {
     "listTitle": "Abilities",
@@ -547,5 +580,22 @@
     "base": "Base",
     "result": "Result",
     "evTotal": "EVs used: {total} of {max}"
+  },
+  "battle": {
+    "title": "Z-Moves and Max Moves",
+    "description": "Every Z-Move and Max Move by type, and how a move's power converts into them.",
+    "lead": "The two one-use battle mechanics, side by side: which move each type gets and how much power a regular move turns into.",
+    "byType": "By type",
+    "zMove": "Z-Move",
+    "maxMove": "Max Move",
+    "basePower": "Base power",
+    "zPower": "Z-Move power",
+    "zPowerHint": "Used in Sun and Moon and in Ultra Sun and Ultra Moon.",
+    "maxPower": "Max Move power",
+    "maxPowerHint": "Used in Sword and Shield. {fighting} and {poison} moves become weaker Max Moves.",
+    "powerN": "Power {power}",
+    "seeAll": "See every Z-Move and Max Move",
+    "signature": "Each Z-Move comes in a physical and a special form with the same name. Gigantamax moves for individual Pokémon are not in PokeAPI.",
+    "note": "Some moves convert differently in the games (fixed-power and variable-power moves such as Counter or Low Kick), and status moves become Z-Moves with an effect instead of damage. This table covers the standard rule."
   }
 }

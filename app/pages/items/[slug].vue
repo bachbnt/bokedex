@@ -2,13 +2,18 @@
 const { t } = useI18n()
 const route = useRoute()
 const sprites = useSprites()
-const { name, locale } = useL10n()
+const { name, altName, locale } = useL10n()
 const { entity: item, refs } = await useEntity('items', () => String(route.params.slug))
 const labels = useLabels(refs)
 
 useSeoMeta({
   title: () => `${name(item.value.names)} | Bokedex`,
   description: () => item.value.shortEffect[locale.value] ?? item.value.shortEffect.en ?? t('items.seoFallback', { name: name(item.value.names) }),
+})
+useEntitySchema('items', {
+  name: () => name(item.value.names),
+  alternateName: () => altName(item.value.names),
+  description: () => item.value.shortEffect[locale.value] ?? item.value.shortEffect.en,
 })
 
 const facts = computed(() => {

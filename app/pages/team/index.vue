@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import type { AbilityRow, PokemonRow } from '#shared/types/encyclopedia'
+
 const { t } = useI18n()
 const { name, altName } = useL10n()
 const collection = useCollectionStore()
 const { pokemon, byId } = useDex()
 const sprites = useSprites()
+const { refs } = useTaxonomyRefs()
+const { reference } = useReference()
+const { data: table } = useDataset<PokemonRow[]>('pokemon-table')
+const { data: abilityRows } = useDataset<AbilityRow[]>('abilities')
 
 useSeoMeta({ title: () => `${t('team.title')} | Bokedex`, description: () => t('team.description') })
 
@@ -13,9 +19,40 @@ const members = computed(() => collection.team.flatMap((id) => {
 }))
 const emptySlots = computed(() => Math.max(0, TEAM_SIZE - members.value.length))
 
-const { defense, covered, uncovered } = useTeamAnalysis(members)
-const labels = useLabels()
+const labels = useLabels(refs)
+const builds = computed(() => new Map(members.value.map(member => [member.id, collection.buildOf(member.id)])))
+const { defense, covered, uncovered } = useTeamAnalysis(() => members.value.map(member => ({ types: member.types, tera: builds.value.get(member.id)?.tera })))
 const risky = computed(() => defense.value.filter(row => row.risky))
+
+const rowById = computed(() => new Map((table.value ?? []).map(row => [row.id, row])))
+const natureOf = (slug: string | null) => reference.value?.natures.find(entry => entry.slug === slug)
+const abilityName = (slug: string) => {
+  const row = abilityRows.value?.find(entry => entry.slug === slug)
+  return row ? name(row.names) : titleCase(slug)
+}
+
+/** The shape of each member's build in one line: nature, ability and level. */
+function buildSummary(id: number) {
+  const build = builds.value.get(id)
+  if (!build) return ''
+  const nature = natureOf(build.nature)
+  return [nature ? name(nature.names) : '', build.ability ? abilityName(build.ability) : '', t('team.build.level', { level: build.level })].filter(Boolean).join(' · ')
+}
+
+/** Real stats for each member, with the best of each column marked. */
+const statRows = computed(() => members.value.flatMap((member) => {
+  const row = rowById.value.get(member.id)
+  const build = builds.value.get(member.id)
+  if (!row || !build) return []
+  const stats = buildStats(row.stats, build, natureOf(build.nature), row.slug === 'shedinja')
+  return [{ member, stats, total: stats.reduce((sum, value) => sum + value, 0) }]
+}))
+const bestOf = (index: number) => Math.max(...statRows.value.map(row => row.stats[index] ?? 0))
+
+const editingId = ref<number | null>(null)
+const editOpen = ref(false)
+const editing = computed(() => (editingId.value === null ? null : rowById.value.get(editingId.value) ?? null))
+const editBuild = (id: number) => { editingId.value = id; editOpen.value = true }
 
 const pickerOpen = ref(false)
 const randomTeam = () => collection.setTeam(sample(pokemon.value, TEAM_SIZE).map(entry => entry.id))
@@ -57,6 +94,15 @@ const randomTeam = () => collection.setTeam(sample(pokemon.value, TEAM_SIZE).map
             <div class="mt-2 flex flex-wrap justify-center gap-1">
               <TypeBadge v-for="type in member.types" :key="type" :type="type" size="sm" />
             </div>
+            <p v-if="builds.get(member.id)?.tera" class="mt-2 flex items-center gap-1.5 text-xs text-muted">
+              {{ t('team.build.teraShort') }}
+              <TypeBadge :type="builds.get(member.id)!.tera!" size="sm" />
+            </p>
+            <p class="mt-2 text-xs text-muted">{{ buildSummary(member.id) }}</p>
+            <button type="button" class="btn btn-ghost mt-3 !px-4 !py-1.5 text-sm" :disabled="!rowById.has(member.id)" @click="editBuild(member.id)">
+              <AppIcon name="sparkle" :size="14" />
+              {{ t('team.build.edit') }}
+            </button>
           </div>
         </li>
         <li v-for="n in emptySlots" :key="`empty-${n}`">
@@ -73,6 +119,29 @@ const randomTeam = () => collection.setTeam(sample(pokemon.value, TEAM_SIZE).map
     </section>
 
     <template v-if="members.length">
+      <section v-if="statRows.length" class="panel p-6" aria-labelledby="stats-heading">
+        <h2 id="stats-heading" class="text-2xl font-bold">{{ t('team.statsTitle') }}</h2>
+        <p class="mb-4 mt-1 text-sm text-muted">{{ t('team.statsHint') }}</p>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[34rem] text-left text-sm">
+            <thead class="text-muted">
+              <tr class="border-b border-line">
+                <th scope="col" class="py-2 pr-3 font-medium">{{ t('team.statsPokemon') }}</th>
+                <th v-for="stat in STAT_KEYS" :key="stat" scope="col" class="py-2 pr-3 text-right font-medium">{{ labels.taxonomy('stat', stat) }}</th>
+                <th scope="col" class="py-2 text-right font-medium">{{ t('pokemon.statTotal') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in statRows" :key="row.member.id" class="border-b border-line/60 last:border-0">
+                <th scope="row" class="py-2.5 pr-3 text-left font-semibold">{{ name(row.member.names) }}</th>
+                <td v-for="(value, index) in row.stats" :key="index" class="py-2.5 pr-3 text-right tabular-nums" :class="value === bestOf(index) && statRows.length > 1 ? 'font-bold text-good' : ''">{{ value }}</td>
+                <td class="py-2.5 text-right font-bold tabular-nums">{{ row.total }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="panel space-y-4 p-6" aria-labelledby="threats-heading">
         <h2 id="threats-heading" class="text-2xl font-bold">{{ t('team.holes') }}</h2>
         <p v-if="!risky.length" class="font-semibold text-good">{{ t('team.noHoles') }}</p>
@@ -115,6 +184,7 @@ const randomTeam = () => collection.setTeam(sample(pokemon.value, TEAM_SIZE).map
 
     <EmptyState v-else icon="team" :title="t('team.emptyTitle')" :message="t('team.emptyMessage')" :action="t('team.add')" @action="pickerOpen = true" />
 
+    <TeamBuildDialog v-model:open="editOpen" :pokemon="editing" :build="editing ? collection.buildOf(editing.id) : defaultBuild()" @save="editing && collection.setBuild(editing.id, $event)" />
     <PokemonPicker v-model:open="pickerOpen" :disabled-ids="collection.team" @select="collection.addToTeam($event)" />
   </div>
 </template>

@@ -6,6 +6,7 @@ import type {
   TaxonomyKind,
 } from '#shared/types/encyclopedia'
 import type { Lookup } from '#server/utils/store'
+import { battleMovesOf } from '#shared/utils/battle-moves'
 
 /** Gathers what an entity mentions, then resolves it to rows and names in one go. */
 class Collector {
@@ -122,6 +123,11 @@ const collectors: { [K in EntityKind]: (entity: EntityByKind[K], c: Collector) =
     }
     for (const entry of move.flavor) c.tax('version-group', entry.versionGroup)
     c.pokemonIds(move.learnedBy)
+    const battle = battleMovesOf(move)
+    if (battle) {
+      c.move(battle.z.slug)
+      c.move(battle.max.slug)
+    }
   },
   'abilities': (ability, c) => {
     c.pokemonIds(ability.pokemon.map(entry => entry.id))

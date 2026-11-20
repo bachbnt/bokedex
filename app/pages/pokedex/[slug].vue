@@ -7,6 +7,9 @@ const labels = useLabels(refs)
 
 const title = computed(() => labels.taxonomy('pokedex', pokedex.value.slug) || name(pokedex.value.names))
 useSeoMeta({ title: () => `${title.value} | Bokedex`, description: () => t('pokedexes.seoFallback', { name: title.value }) })
+useEntitySchema('pokedex', {
+  name: () => title.value,
+})
 
 const ordered = computed(() => pokedex.value.entries.toSorted((a, b) => a.number - b.number))
 const notes = computed(() => Object.fromEntries(ordered.value.map(entry => [entry.id, `#${entry.number}`])))

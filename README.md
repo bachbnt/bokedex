@@ -22,13 +22,15 @@ Built with **Nuxt 4, Vue 3, Pinia, VueUse and Tailwind CSS 4**. Data comes from 
 | **Compare** `/compare` | Up to four Pokémon side by side. |
 | **Stat calculator** `/calculator` | Real stats from base stats, level, nature, IVs and EVs. |
 | **Moves, abilities, items, berries** | Sortable, filterable lists; details with effects, TM numbers, who learns, who holds. |
+| **Z-Moves and Max Moves** `/battle-moves` | Every Z-Move and Max Move by type, how a move's power converts, and the converted move on each move's page. |
 | **Types** `/types` | The full chart, a defensive calculator, and a page per type. |
 | **Places** `/locations` | Wild Pokémon for every route, town and cave, per game, with method, level and chance. |
 | **Games, Pokédexes, generations, regions, egg groups, natures** | The reference data around them. |
-| **Team builder** and **quizzes** | Weakness and coverage analysis for a team of six; two quizzes, in either language. |
+| **Team builder** `/team` | A team of six with a Tera type, nature, ability, level, IVs and EVs per member; real stats, and weakness and coverage analysis that follows the Tera types. |
+| **Quizzes** `/play` | Five: silhouettes, the type chart, stat duels, name match (Japanese and English names) and abilities. |
 | **Search** (`⌘K` / `Ctrl+K`) | One box across everything. |
 
-Also: dark mode, a card-to-hero shared-element transition, keyboard shortcuts (`/` to search, arrow keys between Pokémon, `1` to `4` in quizzes), reduced-motion support and a mobile layout.
+Also: structured data (JSON-LD) and a sitemap for search engines, dark mode, a card-to-hero shared-element transition, keyboard shortcuts (`/` to search, arrow keys between Pokémon, `1` to `4` in quizzes), reduced-motion support and a mobile layout.
 
 | Search | Compare | Place |
 | --- | --- | --- |

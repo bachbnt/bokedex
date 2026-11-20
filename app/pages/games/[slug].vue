@@ -1,11 +1,15 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const route = useRoute()
-const { name } = useL10n()
+const { name, altName } = useL10n()
 const { entity: game, refs } = await useEntity('games', () => String(route.params.slug))
 const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${name(game.value.names)} | Bokedex`, description: () => t('games.seoFallback', { name: name(game.value.names) }) })
+useEntitySchema('games', {
+  name: () => name(game.value.names),
+  alternateName: () => altName(game.value.names),
+})
 
 const machines = computed(() => game.value.machines.map(machine => ({ ...machine, row: refs.value.moves[machine.move] })))
 </script>

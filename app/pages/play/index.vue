@@ -8,6 +8,9 @@ useSeoMeta({ title: () => `${t('play.title')} | Bokedex`, description: () => t('
 const GAMES = [
   { key: 'silhouette', label: 'play.silhouette', icon: 'sparkle' },
   { key: 'typeMaster', label: 'play.typeMaster', icon: 'bolt' },
+  { key: 'statDuel', label: 'play.statDuel', icon: 'scale' },
+  { key: 'nameMatch', label: 'play.nameMatch', icon: 'globe' },
+  { key: 'abilityGuess', label: 'play.abilityGuess', icon: 'sparkle' },
 ] as const
 
 type ActiveGame = (typeof GAMES)[number]['key']
@@ -24,7 +27,7 @@ watch(() => route.query.game, (game) => {
 
 watch(active, game => router.replace({ query: { game } }))
 
-// Both games need the dex and the chart; load once here so each game starts instantly.
+// Every game needs the dex; load it once here so each game starts instantly.
 const { status } = useDex()
 </script>
 
@@ -35,7 +38,7 @@ const { status } = useDex()
       <p class="text-lg text-muted">{{ t('play.lead') }}</p>
     </header>
 
-    <div class="inline-flex rounded-full border border-line bg-surface p-1" role="tablist" :aria-label="t('play.choose')">
+    <div class="inline-flex max-w-full flex-wrap gap-1 rounded-[28px] border border-line bg-surface p-1" role="tablist" :aria-label="t('play.choose')">
       <button
         v-for="game in GAMES"
         :key="game.key"
@@ -54,7 +57,10 @@ const { status } = useDex()
     <div v-if="status === 'pending'" class="skeleton h-96" />
     <ClientOnly v-else>
       <QuizSilhouette v-if="active === 'silhouette'" />
-      <QuizTypeMaster v-else />
+      <QuizTypeMaster v-else-if="active === 'typeMaster'" />
+      <QuizStatDuel v-else-if="active === 'statDuel'" />
+      <QuizNameMatch v-else-if="active === 'nameMatch'" />
+      <QuizAbilityGuess v-else />
       <template #fallback>
         <div class="skeleton h-96" />
       </template>

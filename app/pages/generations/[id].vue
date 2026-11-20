@@ -5,6 +5,9 @@ const { entity: generation, refs } = await useEntity('generations', () => String
 const labels = useLabels(refs)
 
 useSeoMeta({ title: () => `${t('pokemon.generationN', { n: generation.value.id })} | Bokedex`, description: () => t('generations.seoFallback', { n: generation.value.id }) })
+useEntitySchema('generations', {
+  name: () => t('pokemon.generationN', { n: generation.value.id }),
+})
 </script>
 
 <template>
