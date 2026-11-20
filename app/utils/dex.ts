@@ -1,4 +1,4 @@
-import type { DexEntry } from '#shared/types/pokedex'
+import type { DexEntry, Locale } from '#shared/types/encyclopedia'
 
 export type SortKey = 'id-asc' | 'id-desc' | 'name'
 
@@ -9,16 +9,23 @@ export interface DexFilters {
   onlyFavorites: boolean
   favorites: number[]
   sort: SortKey
+  locale: Locale
 }
 
 export const SORT_KEYS: SortKey[] = ['id-asc', 'id-desc', 'name']
 
-/** Matches "pika", "25", "#25" or "#0025". */
+/**
+ * Matches "pika", "ピカ", "ぴか", "pikachu", "25", "#25" or "#0025" against a Pokémon.
+ * Names are compared in one normal form, so hiragana, katakana and Latin spellings all work.
+ */
 export function matchesQuery(entry: DexEntry, rawQuery: string): boolean {
-  const query = rawQuery.trim().toLowerCase().replace(/^#/, '')
-  if (!query) return true
-  if (/^\d+$/.test(query)) return entry.id === Number(query) || String(entry.id).startsWith(query)
-  return entry.name.replace(/-/g, ' ').includes(query.replace(/-/g, ' '))
+  const trimmed = rawQuery.trim().replace(/^#/, '')
+  if (!trimmed) return true
+  if (/^\d+$/.test(trimmed)) return entry.id === Number(trimmed) || String(entry.id).startsWith(trimmed)
+
+  const query = normalizeSearch(trimmed)
+  const { en, ja, jaKana, jaRoma } = entry.names
+  return [en, ja, jaKana, jaRoma, entry.slug].some(value => value && normalizeSearch(value).includes(query))
 }
 
 export function filterDex(pokemon: DexEntry[], filters: DexFilters): DexEntry[] {
@@ -32,7 +39,10 @@ export function filterDex(pokemon: DexEntry[], filters: DexFilters): DexEntry[] 
   )
 
   if (filters.sort === 'id-desc') return result.toSorted((a, b) => b.id - a.id)
-  if (filters.sort === 'name') return result.toSorted((a, b) => a.name.localeCompare(b.name))
+  if (filters.sort === 'name') {
+    const label = (entry: DexEntry) => pickName(entry.names, filters.locale)
+    return result.toSorted((a, b) => label(a).localeCompare(label(b), filters.locale))
+  }
   return result
 }
 

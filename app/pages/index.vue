@@ -1,13 +1,16 @@
 <script setup lang="ts">
 const PAGE_SIZE = 48
 
+const { t } = useI18n()
 const collection = useCollectionStore()
-const { pokemon, generations, types, status, error, refresh, data } = useDex()
+const { pokemon, status, error, refresh } = useDex()
+const { reference } = useReference()
+const { types } = useTypeChart()
 const { query, type, gen, sort, onlyFavorites, filtered } = useDexFilters()
 
 useSeoMeta({
-  title: 'Bokedex: every Pokémon, one search away',
-  description: 'Browse the full Pokédex, filter by type and generation, and open any Pokémon for stats, evolutions and moves.',
+  title: () => t('seo.homeTitle'),
+  description: () => t('seo.homeDescription'),
 })
 
 const visibleCount = ref(PAGE_SIZE)
@@ -29,23 +32,19 @@ const today = computed(() => pickOfTheDay(pokemon.value))
   <div class="space-y-10">
     <section class="grid items-center gap-8 lg:grid-cols-[1.25fr_1fr]">
       <div class="space-y-5">
-        <h1 class="max-w-xl text-5xl font-extrabold sm:text-6xl">Every Pokémon, one search away.</h1>
+        <h1 class="max-w-xl text-5xl font-extrabold sm:text-6xl">{{ t('home.title') }}</h1>
         <p class="max-w-lg text-lg text-muted">
-          <template v-if="data">
-            Browse {{ data.total.toLocaleString() }} Pokémon from {{ generations.length }} generations.
-          </template>
-          <template v-else>Browse every Pokémon.</template>
-          Check type matchups, build a team of six, then test yourself in the quiz.
+          {{ t('home.lead', { total: pokemon.length.toLocaleString(), generations: reference?.generations.length ?? 0 }) }}
         </p>
         <div class="flex flex-wrap gap-3">
-          <NuxtLink to="/team" class="btn btn-brand">
+          <NuxtLinkLocale to="/team" class="btn btn-brand">
             <AppIcon name="team" :size="18" />
-            Build a team
-          </NuxtLink>
-          <NuxtLink to="/play" class="btn btn-ghost">
+            {{ t('home.ctaTeam') }}
+          </NuxtLinkLocale>
+          <NuxtLinkLocale to="/play" class="btn btn-ghost">
             <AppIcon name="game" :size="18" />
-            Play a quiz
-          </NuxtLink>
+            {{ t('home.ctaPlay') }}
+          </NuxtLinkLocale>
         </div>
       </div>
       <TodayPick v-if="today" :entry="today" />
@@ -59,7 +58,7 @@ const today = computed(() => pickOfTheDay(pokemon.value))
       v-model:sort="sort"
       v-model:only-favorites="onlyFavorites"
       :types="types"
-      :generations="generations"
+      :reference="reference"
       :result-count="filtered.length"
       :favorite-count="collection.favorites.length"
     />
@@ -71,17 +70,17 @@ const today = computed(() => pickOfTheDay(pokemon.value))
     <EmptyState
       v-else-if="error"
       icon="refresh"
-      title="Couldn't load the Pokédex"
-      message="The data service didn't respond. Check your connection and try again."
-      action="Try again"
+      :title="t('home.errorTitle')"
+      :message="t('home.errorMessage')"
+      :action="t('common.retry')"
       @action="refresh()"
     />
 
     <EmptyState
       v-else-if="!filtered.length"
       icon="search"
-      title="No Pokémon match"
-      message="Try a different name or number, or clear a filter."
+      :title="t('home.emptyTitle')"
+      :message="t('home.emptyMessage')"
     />
 
     <template v-else>
@@ -91,7 +90,7 @@ const today = computed(() => pickOfTheDay(pokemon.value))
       <div ref="sentinel" class="h-10" aria-hidden="true" />
       <p v-if="hasMore" class="flex items-center justify-center gap-2 text-sm text-muted">
         <PokeBall :size="20" shake />
-        Loading more
+        {{ t('common.loadingMore') }}
       </p>
     </template>
   </div>

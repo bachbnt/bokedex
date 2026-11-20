@@ -73,8 +73,3 @@ export function flavorBy<K extends 'version' | 'version_group'>(entries: LangTex
   }
   return [...groups].map(([name, bucket]) => ({ key: name, text: textOf(bucket) })).filter(entry => entry.text.en || entry.text.ja)
 }
-
-/** Hiragana to katakana, so kana search matches regardless of which script the user types. */
-export function toKatakana(value: string): string {
-  return value.replace(/[ぁ-ゖ]/g, char => String.fromCharCode(char.charCodeAt(0) + 0x60))
-}

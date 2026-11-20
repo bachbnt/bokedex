@@ -1,4 +1,4 @@
-import type { DexEntry } from '#shared/types/pokedex'
+import type { DexEntry } from '#shared/types/encyclopedia'
 
 export interface DefenseRow {
   type: string

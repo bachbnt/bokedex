@@ -64,6 +64,7 @@ function main(): void {
   const growthRates = step('growth rates', buildGrowthRates)
   const eggGroups = step('egg groups', buildEggGroups)
   const taxonomy = step('taxonomy', buildTaxonomy)
+  for (const group of games.versionGroups) taxonomy['version-group'][group.slug] = group.names
 
   step('write entities', () => {
     for (const species of pokemon.species) writeJson(GENERATED_DIR, `entities/pokemon/${species.id}.json`, species)

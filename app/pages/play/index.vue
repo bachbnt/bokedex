@@ -1,18 +1,16 @@
 <script setup lang="ts">
-useSeoMeta({
-  title: 'Play | Bokedex',
-  description: 'Two quick Pokémon quizzes: name the silhouette and master the type chart.',
-})
+const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
+
+useSeoMeta({ title: () => `${t('play.title')} | Bokedex`, description: () => t('play.description') })
 
 const GAMES = [
-  { key: 'silhouette', label: "Who's that Pokémon?", icon: 'sparkle' },
-  { key: 'typeMaster', label: 'Type master', icon: 'bolt' },
+  { key: 'silhouette', label: 'play.silhouette', icon: 'sparkle' },
+  { key: 'typeMaster', label: 'play.typeMaster', icon: 'bolt' },
 ] as const
 
 type ActiveGame = (typeof GAMES)[number]['key']
-
-const route = useRoute()
-const router = useRouter()
 
 const isGameKey = (value: unknown): value is ActiveGame => GAMES.some(game => game.key === value)
 
@@ -33,11 +31,11 @@ const { status } = useDex()
 <template>
   <div class="space-y-8">
     <header class="max-w-2xl space-y-2">
-      <h1 class="text-5xl font-extrabold">Play</h1>
-      <p class="text-lg text-muted">Quick rounds built from live Pokédex data. New Pokémon join the quiz as soon as they appear in the Pokédex.</p>
+      <h1 class="text-5xl font-extrabold">{{ t('play.title') }}</h1>
+      <p class="text-lg text-muted">{{ t('play.lead') }}</p>
     </header>
 
-    <div class="inline-flex rounded-full border border-line bg-surface p-1" role="tablist" aria-label="Choose a game">
+    <div class="inline-flex rounded-full border border-line bg-surface p-1" role="tablist" :aria-label="t('play.choose')">
       <button
         v-for="game in GAMES"
         :key="game.key"
@@ -49,14 +47,14 @@ const { status } = useDex()
         @click="active = game.key"
       >
         <AppIcon :name="game.icon" :size="16" />
-        {{ game.label }}
+        {{ t(game.label) }}
       </button>
     </div>
 
     <div v-if="status === 'pending'" class="skeleton h-96" />
     <ClientOnly v-else>
-      <GameSilhouette v-if="active === 'silhouette'" />
-      <GameTypeMaster v-else />
+      <QuizSilhouette v-if="active === 'silhouette'" />
+      <QuizTypeMaster v-else />
       <template #fallback>
         <div class="skeleton h-96" />
       </template>

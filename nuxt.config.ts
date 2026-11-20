@@ -1,5 +1,20 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
+
+const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL ?? 'https://bokedex.web.app'
+
+/** Pages that are not one-per-entity. Each exists in every language. */
+const STATIC_ROUTES = ['/', '/types', '/team', '/play']
+
+/** Entity pages (`/pokemon/25`, `/moves/thunderbolt`...) written by `npm run ingest`. */
+function entityRoutes(): string[] {
+  const file = fileURLToPath(new URL('./data/generated/routes.json', import.meta.url))
+  return existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as string[]) : []
+}
+
+/** The site is prerendered in every language, so each route is listed with its `/ja` twin. */
+const withLanguages = (routes: string[]) => routes.flatMap(route => [route, route === '/' ? '/ja' : `/ja${route}`])
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -10,7 +25,19 @@ export default defineNuxtConfig({
     '#server': fileURLToPath(new URL('./server', import.meta.url)),
   },
 
-  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@nuxt/fonts'],
+  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@nuxt/fonts', '@nuxtjs/i18n'],
+
+  i18n: {
+    strategy: 'prefix_except_default',
+    defaultLocale: 'en',
+    // Static hosting cannot redirect by Accept-Language; the visitor picks a language explicitly.
+    detectBrowserLanguage: false,
+    baseUrl: SITE_URL,
+    locales: [
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+      { code: 'ja', language: 'ja-JP', name: '日本語', file: 'ja.json' },
+    ],
+  },
 
   pinia: {
     storesDirs: ['./stores/**'],
@@ -26,6 +53,8 @@ export default defineNuxtConfig({
     families: [
       { name: 'Bricolage Grotesque', provider: 'google', weights: [500, 700, 800] },
       { name: 'Instrument Sans', provider: 'google', weights: [400, 500, 600] },
+      // Japanese glyphs: the Latin fonts above have none, so name a Japanese face to avoid mismatched fallbacks.
+      { name: 'Noto Sans JP', provider: 'google', weights: [400, 500, 700], subsets: ['japanese'] },
     ],
   },
 
@@ -35,35 +64,30 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Public because the browser fetches Pokémon details straight from PokeAPI.
-    // Swap for a self-hosted PokeAPI mirror if needed.
     public: {
-      pokeApiBase: 'https://pokeapi.co/api/v2',
+      siteUrl: SITE_URL,
       // Sprites are derived from the dex id, so new Pokémon get artwork automatically.
       spriteBase: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon',
+      itemSpriteBase: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items',
       cryBase: 'https://cdn.jsdelivr.net/gh/PokeAPI/cries@main/cries/pokemon/latest',
     },
   },
 
-  // Static hosting: `nuxt generate` bakes the dex and type chart into JSON and prerenders the main
-  // pages. Pokémon detail pages are rendered in the browser because there are too many to prerender.
+  // Static hosting: `nuxt generate` prerenders every page from the data `npm run ingest` produced.
+  // A page that cannot be built fails the build instead of silently shipping a hole.
   nitro: {
     prerender: {
       crawlLinks: false,
-      routes: ['/', '/types', '/team', '/play', '/api/dex.json', '/api/types.json'],
+      failOnError: true,
+      concurrency: 8,
+      routes: withLanguages([...STATIC_ROUTES, ...entityRoutes()]),
     },
-  },
-
-  routeRules: {
-    '/pokemon/**': { ssr: false },
   },
 
   app: {
     head: {
-      htmlAttrs: { lang: 'en' },
       title: 'Bokedex',
       meta: [
-        { name: 'description', content: 'Bokedex is a Pokédex and game companion: browse every Pokémon, check type matchups, build teams and play quizzes.' },
         { name: 'theme-color', content: '#f2384a' },
       ],
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],

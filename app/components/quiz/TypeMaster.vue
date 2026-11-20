@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DexEntry } from '#shared/types/pokedex'
+import type { DexEntry } from '#shared/types/encyclopedia'
 
 type Verdict = 'immune' | 'resisted' | 'neutral' | 'super'
 
@@ -9,17 +9,15 @@ interface Question {
   multiplier: number
 }
 
-const CHOICES: { verdict: Verdict, label: string }[] = [
-  { verdict: 'immune', label: 'No effect' },
-  { verdict: 'resisted', label: 'Not very effective' },
-  { verdict: 'neutral', label: 'Normal damage' },
-  { verdict: 'super', label: 'Super effective' },
-]
+const CHOICES: Verdict[] = ['immune', 'resisted', 'neutral', 'super']
 
 /** Share of rounds that must be a "surprising" matchup so the quiz isn't all neutral hits. */
 const INTERESTING_RATE = 0.8
 const MAX_ATTEMPTS = 12
 
+const { t } = useI18n()
+const { name } = useL10n()
+const labels = useLabels()
 const { pokemon } = useDex()
 const { types, effectiveness, status } = useTypeChart()
 const sprites = useSprites()
@@ -65,7 +63,7 @@ function begin() {
 onKeyStroke(['1', '2', '3', '4'], (event) => {
   if (quiz.phase.value !== 'playing') return
   const choice = CHOICES[Number(event.key) - 1]
-  if (choice) choose(choice.verdict)
+  if (choice) choose(choice)
 })
 onKeyStroke('Enter', () => {
   if (quiz.phase.value === 'playing' && quiz.result.value) advance()
@@ -87,69 +85,67 @@ function choiceClass(verdict: Verdict) {
         <span class="grid h-[72px] w-[72px] place-items-center rounded-full bg-glow text-[#12163a]">
           <AppIcon name="bolt" :size="36" filled />
         </span>
-        <h2 id="typemaster-title" class="text-3xl font-extrabold">Type master</h2>
-        <p class="text-muted">
-          A move of one type hits a Pokémon. How much damage does it do? Ten rounds that train the type chart the games expect you to know.
-        </p>
-        <button type="button" class="btn btn-brand w-full" :disabled="!ready" @click="begin">Start</button>
-        <p class="text-sm text-muted">Best {{ scores.records.typeMaster.best }}/10, played {{ scores.records.typeMaster.played }} times</p>
+        <h2 id="typemaster-title" class="text-3xl font-extrabold">{{ t('play.typeMaster') }}</h2>
+        <p class="text-muted">{{ t('play.typeMasterIntro') }}</p>
+        <button type="button" class="btn btn-brand w-full" :disabled="!ready" @click="begin">{{ t('play.start') }}</button>
+        <p class="text-sm text-muted">{{ t('play.record', { best: scores.records.typeMaster.best, played: scores.records.typeMaster.played }) }}</p>
       </div>
     </template>
 
     <template v-else-if="quiz.phase.value === 'playing' && quiz.question.value">
       <div class="mx-auto max-w-xl space-y-6">
-        <GameRoundHeader :round="quiz.round.value" :rounds="quiz.rounds" :score="quiz.score.value" :streak="quiz.streak.value" />
+        <QuizRoundHeader :round="quiz.round.value" :rounds="quiz.rounds" :score="quiz.score.value" :streak="quiz.streak.value" />
 
         <div
           class="flex flex-col items-center gap-3 rounded-[28px] p-6 text-center"
           :style="{ ...pokemonTheme(quiz.question.value.defender.types), backgroundImage: 'radial-gradient(circle at 50% 30%, color-mix(in oklab, var(--poke) 35%, transparent), transparent 75%)' }"
         >
           <p class="flex flex-wrap items-center justify-center gap-2 font-semibold">
-            A <TypeBadge :type="quiz.question.value.attacker" /> move hits
+            {{ t('play.moveHits.before') }} <TypeBadge :type="quiz.question.value.attacker" /> {{ t('play.moveHits.after') }}
           </p>
           <img
             :key="quiz.question.value.defender.id"
             :src="sprites.artwork(quiz.question.value.defender.id)"
-            :alt="titleCase(quiz.question.value.defender.name)"
+            :alt="name(quiz.question.value.defender.names)"
             width="475"
             height="475"
             class="animate-pop h-40 w-40 object-contain drop-shadow-[0_12px_10px_rgb(0_0_0/0.3)]"
           >
-          <p class="font-display text-2xl font-bold">{{ titleCase(quiz.question.value.defender.name) }}</p>
+          <p class="font-display text-2xl font-bold">{{ name(quiz.question.value.defender.names) }}</p>
           <div class="flex gap-1.5">
             <TypeBadge v-for="type in quiz.question.value.defender.types" :key="type" :type="type" size="sm" />
           </div>
         </div>
 
-        <ul class="grid gap-3 sm:grid-cols-2" aria-label="How effective is the move?">
-          <li v-for="(choice, index) in CHOICES" :key="choice.verdict">
+        <ul class="grid gap-3 sm:grid-cols-2" :aria-label="t('play.howEffective')">
+          <li v-for="(choice, index) in CHOICES" :key="choice">
             <button
               type="button"
               class="flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left font-semibold transition-all"
-              :class="choiceClass(choice.verdict)"
+              :class="choiceClass(choice)"
               :disabled="Boolean(quiz.result.value)"
-              @click="choose(choice.verdict)"
+              @click="choose(choice)"
             >
               <kbd class="grid h-6 w-6 place-items-center rounded-md bg-surface-2 text-xs text-muted">{{ index + 1 }}</kbd>
-              {{ choice.label }}
+              {{ t(`play.verdictChoice.${choice}`) }}
             </button>
           </li>
         </ul>
 
         <div class="flex min-h-12 items-center justify-between gap-3" aria-live="polite">
           <p v-if="quiz.result.value" class="font-semibold">
-            {{ quiz.result.value === 'correct' ? 'Correct.' : 'Not quite.' }}
-            {{ titleCase(quiz.question.value.attacker) }} does {{ formatMultiplier(quiz.question.value.multiplier) }}× here.
+            {{ quiz.result.value === 'correct' ? t('play.correctShort') : t('play.wrongShort') }}
+            {{ t('play.multiplierResult', { type: labels.type(quiz.question.value.attacker), multiplier: formatMultiplier(quiz.question.value.multiplier) }) }}
           </p>
           <span v-else />
           <button v-if="quiz.result.value" type="button" class="btn" @click="advance">
-            {{ quiz.isLastRound.value ? 'See results' : 'Next' }}
+            {{ quiz.isLastRound.value ? t('play.results') : t('play.next') }}
           </button>
         </div>
       </div>
     </template>
 
-    <GameResult
+    <QuizResult
       v-else
       :score="quiz.score.value"
       :total="quiz.rounds"

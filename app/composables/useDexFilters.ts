@@ -44,6 +44,7 @@ export function useDexFilters() {
   const router = useRouter()
   const collection = useCollectionStore()
   const { pokemon } = useDex()
+  const { locale } = useL10n()
 
   const query = ref('')
   const type = ref('')
@@ -89,6 +90,7 @@ export function useDexFilters() {
     onlyFavorites: onlyFavorites.value,
     favorites: collection.favorites,
     sort: sort.value,
+    locale: locale.value,
   }))
 
   return { query, type, gen, sort, onlyFavorites, filtered }

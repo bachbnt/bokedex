@@ -1,4 +1,4 @@
-import type { TypeInfo } from '#shared/types/pokedex'
+import type { TypeRow } from '#shared/types/encyclopedia'
 
 export type Multiplier = 0 | 0.25 | 0.5 | 1 | 2 | 4
 
@@ -12,14 +12,16 @@ export interface DefenseGroups {
 
 /** Type effectiveness derived from PokeAPI damage relations — no hardcoded chart. */
 export function useTypeChart() {
-  const { data, status, error } = useFetch<TypeInfo[]>('/api/types.json', { key: 'types', default: () => [] })
+  const { data, status, error } = useDataset<TypeRow[]>('types')
 
-  const types = computed(() => (data.value ?? []).map(type => type.name))
+  // Types nobody has (stellar, unknown) would only add empty rows and columns.
+  const playable = computed(() => (data.value ?? []).filter(type => type.hasPokemon))
+  const types = computed(() => playable.value.map(type => type.slug))
 
   /** attacker -> defender -> multiplier for a single defending type. */
   const matrix = computed(() => {
     const result = new Map<string, Map<string, number>>()
-    for (const { name, relations } of data.value ?? []) {
+    for (const { slug: name, relations } of playable.value) {
       const row = new Map<string, number>()
       for (const defender of types.value) row.set(defender, 1)
       for (const defender of relations.doubleTo) row.set(defender, 2)

@@ -1,16 +1,24 @@
-import type { DexIndex } from '#shared/types/pokedex'
+import type { DexEntry, ReferenceData } from '#shared/types/encyclopedia'
 
 /**
- * The whole dex as one compact payload (id, name, types, generation).
- * Shared across every page via the fixed key, so it is fetched once.
+ * The whole Pokédex as one compact list (id, names in both languages, types, generation).
+ * Shared across pages via the fixed key, so it is fetched once.
  */
 export function useDex() {
-  const { data, status, error, refresh } = useFetch<DexIndex>('/api/dex.json', { key: 'dex' })
+  const { data, status, error, refresh } = useDataset<DexEntry[]>('dex')
 
-  const pokemon = computed(() => data.value?.pokemon ?? [])
-  const generations = computed(() => data.value?.generations ?? [])
-  const types = computed(() => data.value?.types ?? [])
+  const pokemon = computed(() => data.value ?? [])
   const byId = computed(() => new Map(pokemon.value.map(entry => [entry.id, entry])))
 
-  return { data, status, error, refresh, pokemon, generations, types, byId }
+  return { data, status, error, refresh, pokemon, byId }
+}
+
+/** Generations, games, regions and other small reference collections. */
+export function useReference() {
+  const { data, status } = useDataset<ReferenceData>('reference')
+
+  const generations = computed(() => data.value?.generations ?? [])
+  const versionGroups = computed(() => data.value?.versionGroups ?? [])
+
+  return { reference: data, status, generations, versionGroups }
 }

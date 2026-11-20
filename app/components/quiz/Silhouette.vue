@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DexEntry } from '#shared/types/pokedex'
+import type { DexEntry } from '#shared/types/encyclopedia'
 
 const OPTION_COUNT = 4
 
@@ -8,7 +8,10 @@ interface Question {
   options: DexEntry[]
 }
 
-const { pokemon, generations } = useDex()
+const { t } = useI18n()
+const { name } = useL10n()
+const { pokemon } = useDex()
+const { generations } = useReference()
 const sprites = useSprites()
 const scores = useScoresStore()
 
@@ -44,7 +47,7 @@ function begin() {
   quiz.start()
 }
 
-// Keys 1–4 answer, Enter / Space continues.
+// Keys 1–4 answer, Enter continues.
 onKeyStroke(['1', '2', '3', '4'], (event) => {
   if (quiz.phase.value !== 'playing') return
   const option = quiz.question.value?.options[Number(event.key) - 1]
@@ -67,27 +70,23 @@ function optionClass(entry: DexEntry) {
     <template v-if="quiz.phase.value === 'idle'">
       <div class="mx-auto flex max-w-md flex-col items-center gap-4 text-center">
         <PokeBall :size="72" shake />
-        <h2 id="silhouette-title" class="text-3xl font-extrabold">Who's that Pokémon?</h2>
-        <p class="text-muted">
-          Ten silhouettes, four names each. Keep a streak going to climb your best score.
-        </p>
+        <h2 id="silhouette-title" class="text-3xl font-extrabold">{{ t('play.silhouette') }}</h2>
+        <p class="text-muted">{{ t('play.silhouetteIntro') }}</p>
         <label class="w-full">
-          <span class="mb-1.5 block text-left text-sm font-medium text-muted">Generation</span>
+          <span class="mb-1.5 block text-left text-sm font-medium text-muted">{{ t('filters.generation') }}</span>
           <select v-model.number="gen" class="input cursor-pointer">
-            <option :value="0">All generations</option>
-            <option v-for="generation in generations" :key="generation.id" :value="generation.id">
-              {{ generation.label }}{{ generation.region ? `: ${titleCase(generation.region)}` : '' }}
-            </option>
+            <option :value="0">{{ t('filters.allGenerations') }}</option>
+            <option v-for="generation in generations" :key="generation.id" :value="generation.id">{{ name(generation.names) }}</option>
           </select>
         </label>
-        <button type="button" class="btn btn-brand w-full" :disabled="!canPlay" @click="begin">Start</button>
-        <p class="text-sm text-muted">Best {{ scores.records.silhouette.best }}/10, played {{ scores.records.silhouette.played }} times</p>
+        <button type="button" class="btn btn-brand w-full" :disabled="!canPlay" @click="begin">{{ t('play.start') }}</button>
+        <p class="text-sm text-muted">{{ t('play.record', { best: scores.records.silhouette.best, played: scores.records.silhouette.played }) }}</p>
       </div>
     </template>
 
     <template v-else-if="quiz.phase.value === 'playing' && quiz.question.value">
       <div class="mx-auto max-w-xl space-y-6">
-        <GameRoundHeader :round="quiz.round.value" :rounds="quiz.rounds" :score="quiz.score.value" :streak="quiz.streak.value" />
+        <QuizRoundHeader :round="quiz.round.value" :rounds="quiz.rounds" :score="quiz.score.value" :streak="quiz.streak.value" />
 
         <div
           class="relative mx-auto grid aspect-square w-full max-w-72 place-items-center overflow-hidden rounded-[28px]"
@@ -96,7 +95,7 @@ function optionClass(entry: DexEntry) {
           <img
             :key="quiz.question.value.answer.id"
             :src="sprites.artwork(quiz.question.value.answer.id)"
-            :alt="quiz.result.value ? titleCase(quiz.question.value.answer.name) : 'Silhouette of a mystery Pokémon'"
+            :alt="quiz.result.value ? name(quiz.question.value.answer.names) : t('play.silhouetteAlt')"
             width="475"
             height="475"
             class="h-5/6 w-5/6 object-contain transition-[filter,transform,opacity] duration-700"
@@ -107,7 +106,7 @@ function optionClass(entry: DexEntry) {
           >
         </div>
 
-        <ul class="grid gap-3 sm:grid-cols-2" aria-label="Choose the Pokémon">
+        <ul class="grid gap-3 sm:grid-cols-2" :aria-label="t('play.chooseName')">
           <li v-for="(option, index) in quiz.question.value.options" :key="option.id">
             <button
               type="button"
@@ -117,25 +116,24 @@ function optionClass(entry: DexEntry) {
               @click="choose(option)"
             >
               <kbd class="grid h-6 w-6 place-items-center rounded-md bg-surface-2 text-xs text-muted">{{ index + 1 }}</kbd>
-              {{ titleCase(option.name) }}
+              {{ name(option.names) }}
             </button>
           </li>
         </ul>
 
         <div class="flex min-h-12 items-center justify-between gap-3" aria-live="polite">
           <p v-if="quiz.result.value" class="font-semibold">
-            <template v-if="quiz.result.value === 'correct'">Correct! It's {{ titleCase(quiz.question.value.answer.name) }}.</template>
-            <template v-else>Not quite. It was {{ titleCase(quiz.question.value.answer.name) }}.</template>
+            {{ quiz.result.value === 'correct' ? t('play.correct', { name: name(quiz.question.value.answer.names) }) : t('play.wrong', { name: name(quiz.question.value.answer.names) }) }}
           </p>
           <span v-else />
           <button v-if="quiz.result.value" type="button" class="btn" @click="advance">
-            {{ quiz.isLastRound.value ? 'See results' : 'Next' }}
+            {{ quiz.isLastRound.value ? t('play.results') : t('play.next') }}
           </button>
         </div>
       </div>
     </template>
 
-    <GameResult
+    <QuizResult
       v-else
       :score="quiz.score.value"
       :total="quiz.rounds"

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { DexEntry } from '#shared/types/pokedex'
+import type { DexEntry } from '#shared/types/encyclopedia'
 
 const props = defineProps<{ entry: DexEntry }>()
 
+const { t } = useI18n()
+const { name, altName } = useL10n()
 const sprites = useSprites()
 const collection = useCollectionStore()
 const { el, onMove, reset } = useTilt()
@@ -16,6 +18,7 @@ function useFallbackImage() {
   imageSrc.value = sprites.pixel(props.entry.id)
 }
 
+const title = computed(() => name(props.entry.names))
 const favorite = computed(() => collection.isFavorite(props.entry.id))
 </script>
 
@@ -27,13 +30,13 @@ const favorite = computed(() => collection.isFavorite(props.entry.id))
     @pointermove="onMove"
     @pointerleave="reset"
   >
-    <NuxtLink
+    <NuxtLinkLocale
       :to="`/pokemon/${entry.id}`"
       class="relative block overflow-hidden rounded-[28px] p-4 pb-5"
       :style="{
         backgroundImage: 'radial-gradient(120% 90% at 50% 0%, color-mix(in oklab, var(--poke) 34%, transparent), transparent 70%), linear-gradient(160deg, color-mix(in oklab, var(--poke-2) 14%, transparent), transparent 60%)',
       }"
-      :aria-label="`${titleCase(entry.name)}, ${padDexId(entry.id)}`"
+      :aria-label="`${title}, ${padDexId(entry.id)}`"
     >
       <span
         class="font-display pointer-events-none absolute right-3 top-1 text-[4.25rem] font-extrabold leading-none"
@@ -46,7 +49,7 @@ const favorite = computed(() => collection.isFavorite(props.entry.id))
       <div class="relative mx-auto aspect-square w-full max-w-[220px]" style="transform: translateZ(46px)">
         <img
           :src="imageSrc"
-          :alt="titleCase(entry.name)"
+          :alt="title"
           width="475"
           height="475"
           loading="lazy"
@@ -58,19 +61,22 @@ const favorite = computed(() => collection.isFavorite(props.entry.id))
       </div>
 
       <div class="relative mt-2">
-        <h3 class="truncate text-xl font-bold">{{ titleCase(entry.name) }}</h3>
+        <h3 class="truncate text-xl font-bold">{{ title }}</h3>
+        <p v-if="altName(entry.names)" class="truncate text-sm text-muted" :lang="entry.names.ja && name(entry.names) !== entry.names.ja ? 'ja' : 'en'">
+          {{ altName(entry.names) }}
+        </p>
         <div class="mt-2 flex flex-wrap gap-1.5">
           <TypeBadge v-for="type in entry.types" :key="type" :type="type" size="sm" />
         </div>
       </div>
-    </NuxtLink>
+    </NuxtLinkLocale>
 
     <button
       type="button"
       class="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-surface/80 backdrop-blur transition-all hover:scale-110"
       :class="favorite ? 'text-brand' : 'text-muted hover:text-brand'"
       :aria-pressed="favorite"
-      :aria-label="favorite ? `Remove ${titleCase(entry.name)} from favorites` : `Add ${titleCase(entry.name)} to favorites`"
+      :aria-label="favorite ? t('pokemon.removeFavorite', { name: title }) : t('pokemon.addFavorite', { name: title })"
       @click.stop="collection.toggleFavorite(entry.id)"
     >
       <AppIcon name="heart" :filled="favorite" :size="19" />

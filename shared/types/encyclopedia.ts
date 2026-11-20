@@ -572,3 +572,56 @@ export interface ReferenceData {
   eggGroups: { slug: string, names: Names, count: number }[]
   natures: NatureEntry[]
 }
+
+// ---------------------------------------------------------------------------
+// Entity responses
+// ---------------------------------------------------------------------------
+
+export type EntityKind =
+  | 'pokemon'
+  | 'moves'
+  | 'abilities'
+  | 'items'
+  | 'locations'
+  | 'types'
+  | 'generations'
+  | 'games'
+  | 'pokedexes'
+  | 'regions'
+  | 'egg-groups'
+
+/**
+ * The names and small rows an entity page needs to render the things it mentions
+ * (the Pokémon in an evolution line, the abilities of a form, the type badges...).
+ * Attaching only what is referenced keeps each prerendered page small instead of
+ * embedding whole datasets in thousands of pages.
+ */
+export interface Refs {
+  pokemon: Record<number, DexEntry>
+  moves: Record<string, MoveRow>
+  abilities: Record<string, AbilityRow>
+  items: Record<string, ItemRow>
+  locations: Record<string, LocationRow>
+  taxonomy: Partial<Record<TaxonomyKind, Record<string, Names>>>
+}
+
+export interface EntityResponse<T> {
+  data: T
+  refs: Refs
+}
+
+/** The entity type each kind of page is built from. */
+export interface EntityByKind {
+  'pokemon': SpeciesEntry
+  'moves': MoveEntry
+  'abilities': AbilityEntry
+  'items': ItemEntry
+  'locations': LocationEntry
+  'types': TypeEntry
+  'generations': GenerationEntry
+  'games': VersionGroupEntry
+  'pokedexes': PokedexEntry
+  'regions': RegionEntry
+  'egg-groups': EggGroupEntry
+}
+

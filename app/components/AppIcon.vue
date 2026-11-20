@@ -25,6 +25,15 @@ const PATHS: Record<string, string> = {
   'dex': '<rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>',
   'trophy': '<path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H4.5c0 3 1.5 4.5 3.5 4.5M16 6h3.5c0 3-1.5 4.5-3.5 4.5M12 13v4M8.5 20h7M10 17h4"/>',
   'bolt': '<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>',
+  'globe': '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/>',
+  'menu': '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  'chevron-down': '<path d="m6 9 6 6 6-6"/>',
+  'map': '<path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4zM9 4v13M15 6.5v13"/>',
+  'bag': '<path d="M6 8h12l1 12H5L6 8zM9 8V6a3 3 0 0 1 6 0v2"/>',
+  'book': '<path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4zM5 17a3 3 0 0 1 3-3h10"/>',
+  'scale': '<path d="M12 4v16M6 20h12M5 8h14M5 8l-2 6a3 3 0 0 0 4 0L5 8zM19 8l-2 6a3 3 0 0 0 4 0l-2-6z"/>',
+  'leaf': '<path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15M5 19c3-5 6-8 11-10"/>',
+  'egg': '<path d="M12 3c-3.5 0-6.5 5-6.5 10a6.5 6.5 0 0 0 13 0c0-5-3-10-6.5-10z"/>',
 }
 
 const markup = computed(() => PATHS[props.name] ?? '')
